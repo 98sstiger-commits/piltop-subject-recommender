@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>필탑 - 고교학점제 과목추천</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      min-height: 100vh;
+      color: #e2e8f0;
+    }
+
+    #root { display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* ── Header ── */
+    .header {
+      padding: 14px 24px;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-logo {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 18px; color: #fff;
+    }
+    .header-title { font-size: 20px; font-weight: 700; }
+    .header-sub { font-size: 13px; color: #94a3b8; margin-top: 1px; }
+
+    /* ── Layout ── */
+    .layout {
+      display: flex;
+      flex: 1;
+      gap: 0;
+      max-width: 1100px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 20px 16px;
+      gap: 16px;
+    }
+
+    /* ── Profile Panel ── */
+    .profile-panel {
+      width: 280px;
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,0.12);
+      height: fit-content;
+    }
+    .panel-title {
+      font-size: 15px; font-weight: 600; margin-bottom: 16px;
+      color: #c4b5fd;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .form-group { margin-bottom: 14px; }
+    .form-label { font-size: 12px; color: #94a3b8; margin-bottom: 6px; display: block; font-weight: 500; }
+    .form-select, .form-input, .form-textarea {
+      width: 100%;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      color: #e2e8f0;
+      padding: 9px 12px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-select:focus, .form-input:focus, .form-textarea:focus {
+      border-color: #667eea;
+    }
+    .form-select option { background: #302b63; }
+    .form-textarea { resize: none; height: 72px; font-family: inherit; }
+    .apply-btn {
+      width: 100%;
+      padding: 10px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border: none; border-radius: 8px;
+      color: #fff; font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      margin-top: 4px;
+    }
+    .apply-btn:hover { opacity: 0.88; }
+    .profile-badge {
+      margin-top: 14px;
+      padding: 10px 12px;
+      background: rgba(102,126,234,0.15);
+      border: 1px solid rgba(102,126,234,0.3);
+      border-radius: 8px;
+      font-size: 12px;
+      color: #a5b4fc;
+      line-height: 1.6;
+    }
+
+    /* ── Chat Area ── */
+    .chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.1);
+      overflow: hidden;
+    }
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 400px;
+      max-height: calc(100vh - 260px);
+    }
+    .messages::-webkit-scrollbar { width: 4px; }
+    .messages::-webkit-scrollbar-track { background: transparent; }
+    .messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+    /* ── Welcome ── */
+    .welcome {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; flex: 1; text-align: center; padding: 40px 20px;
+    }
+    .welcome-icon {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px; margin-bottom: 20px;
+    }
+    .welcome h2 { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+    .welcome p { color: #94a3b8; font-size: 14px; line-height: 1.7; max-width: 360px; }
+    .suggestion-chips {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      justify-content: center; margin-top: 20px;
+    }
+    .chip {
+      padding: 7px 14px;
+      background: rgba(102,126,234,0.2);
+      border: 1px solid rgba(102,126,234,0.4);
+      border-radius: 20px;
+      font-size: 13px; color: #a5b4fc;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .chip:hover { background: rgba(102,126,234,0.35); }
+
+    /* ── Messages ── */
+    .msg { display: flex; gap: 10px; align-items: flex-start; }
+    .msg.user { flex-direction: row-reverse; }
+    .msg-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+    .msg.user .msg-avatar { background: linear-gradient(135deg, #f093fb, #f5576c); }
+    .msg-bubble {
+      max-width: 75%;
+      padding: 12px 15px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .msg.ai .msg-bubble {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-top-left-radius: 4px;
+    }
+    .msg.user .msg-bubble {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-top-right-radius: 4px;
+    }
+    .msg-bubble pre {
+      white-space: pre-wrap; word-break: break-word;
+      font-family: inherit; margin: 0;
+    }
+    .cursor {
+      display: inline-block;
+      width: 2px; height: 16px;
+      background: #c4b5fd;
+      margin-left: 2px;
+      vertical-align: middle;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* ── Input Bar ── */
+    .input-bar {
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.05);
+      border-top: 1px solid rgba(255,255,255,0.1);
+      display: flex; gap: 10px; align-items: flex-end;
+    }
+    .msg-input {
+      flex: 1;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px;
+      color: #e2e8f0;
+      padding: 11px 15px;
+      font-size: 14px;
+      outline: none;
+      resize: none;
+      font-family: inherit;
+      line-height: 1.5;
+      min-height: 44px;
+      max-height: 120px;
+      transition: border-color 0.2s;
+    }
+    .msg-input:focus { border-color: #667eea; }
+    .msg-input::placeholder { color: #64748b; }
+    .send-btn {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border: none; border-radius: 12px;
+      color: #fff; font-size: 18px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .send-btn:hover:not(:disabled) { opacity: 0.88; }
+    .send-btn:active:not(:disabled) { transform: scale(0.94); }
+    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      .layout { flex-direction: column; padding: 12px; }
+      .profile-panel { width: 100%; }
+      .messages { max-height: 50vh; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useRef, useEffect, useCallback } = React;
+
+    const SUGGESTIONS = [
+      '나에게 맞는 이과 선택과목 추천해줘',
+      '의대 진학을 위한 과목 조합은?',
+      '컴퓨터공학과 준비 과목 알려줘',
+      '예술계열 진로선택 과목 뭐가 있어?',
+      '수학 심화 과목 종류 알려줘',
+      '문이과 융합 과목 추천해줘',
+    ];
+
+    function buildSystemPrompt(grade, career, interests) {
+      return `당신은 고교학점제 전문 과목추천 AI '필탑'입니다.
+
+학생 정보:
+- 학년: ${grade || '미입력'}학년
+- 진로 희망: ${career || '미입력'}
+- 관심 분야: ${interests || '미입력'}
+
+역할 및 지침:
+1. 위 학생 정보를 바탕으로 고교학점제 과목을 구체적으로 추천하세요.
+2. 공통과목, 일반선택, 진로선택, 융합선택 카테고리를 구분하여 설명하세요.
+3. 각 과목을 추천하는 이유와 어떤 역량을 키울 수 있는지 함께 안내하세요.
+4. 대입과 연계된 과목 전략도 조언해 주세요.
+5. 답변은 친근하고 이해하기 쉬운 한국어로 작성하세요.
+6. 필요하면 과목 이름을 **굵게** 표시하거나 목록 형태로 정리하세요.`;
+    }
+
+    function App() {
+      const [grade, setGrade] = useState('1');
+      const [career, setCareer] = useState('');
+      const [interests, setInterests] = useState('');
+      const [appliedProfile, setAppliedProfile] = useState(null);
+      const [messages, setMessages] = useState([]);
+      const [input, setInput] = useState('');
+      const [streaming, setStreaming] = useState(false);
+      const messagesEndRef = useRef(null);
+      const inputRef = useRef(null);
+      const abortRef = useRef(null);
+
+      useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, [messages]);
+
+      const applyProfile = () => {
+        setAppliedProfile({ grade, career, interests });
+        setMessages([]);
+      };
+
+      const sendMessage = useCallback(async (text) => {
+        if (!text.trim() || streaming) return;
+
+        const userMsg = { role: 'user', content: text.trim() };
+        const history = [...messages, userMsg];
+        setMessages(history);
+        setInput('');
+        setStreaming(true);
+
+        const aiPlaceholder = { role: 'assistant', content: '', streaming: true };
+        setMessages([...history, aiPlaceholder]);
+
+        const profile = appliedProfile || { grade, career, interests };
+        const system = buildSystemPrompt(profile.grade, profile.career, profile.interests);
+
+        const apiMessages = history.map(m => ({ role: m.role, content: m.content }));
+
+        abortRef.current = new AbortController();
+
+        try {
+          const response = await fetch('/api/proxy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: apiMessages, system }),
+            signal: abortRef.current.signal,
+          });
+
+          if (!response.ok) {
+            throw new Error(`서버 오류: ${response.status}`);
+          }
+
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+          let accumulated = '';
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop();
+
+            for (const line of lines) {
+              if (!line.startsWith('data: ')) continue;
+              const data = line.slice(6).trim();
+              if (!data || data === '[DONE]') continue;
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed.type === 'content_block_delta' && parsed.delta?.type === 'text_delta') {
+                  accumulated += parsed.delta.text;
+                  setMessages(prev => {
+                    const updated = [...prev];
+                    updated[updated.length - 1] = { role: 'assistant', content: accumulated, streaming: true };
+                    return updated;
+                  });
+                }
+                if (parsed.type === 'message_stop') {
+                  setMessages(prev => {
+                    const updated = [...prev];
+                    updated[updated.length - 1] = { role: 'assistant', content: accumulated, streaming: false };
+                    return updated;
+                  });
+                }
+              } catch (_) {}
+            }
+          }
+
+          setMessages(prev => {
+            const updated = [...prev];
+            const last = updated[updated.length - 1];
+            if (last?.streaming) updated[updated.length - 1] = { ...last, streaming: false };
+            return updated;
+          });
+        } catch (err) {
+          if (err.name === 'AbortError') return;
+          setMessages(prev => {
+            const updated = [...prev];
+            updated[updated.length - 1] = {
+              role: 'assistant',
+              content: `오류가 발생했습니다: ${err.message}`,
+              streaming: false,
+            };
+            return updated;
+          });
+        } finally {
+          setStreaming(false);
+        }
+      }, [messages, streaming, appliedProfile, grade, career, interests]);
+
+      const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage(input);
+        }
+      };
+
+      const profile = appliedProfile || null;
+
+      return (
+        <>
+          <header className="header">
+            <div className="header-logo">필</div>
+            <div>
+              <div className="header-title">필탑 과목추천</div>
+              <div className="header-sub">고교학점제 맞춤 AI 과목추천 서비스</div>
+            </div>
+          </header>
+
+          <div className="layout">
+            {/* Profile Panel */}
+            <aside className="profile-panel">
+              <div className="panel-title">
+                <span>👤</span> 내 정보 설정
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">학년</label>
+                <select className="form-select" value={grade} onChange={e => setGrade(e.target.value)}>
+                  <option value="1">1학년</option>
+                  <option value="2">2학년</option>
+                  <option value="3">3학년</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">진로 희망</label>
+                <input
+                  className="form-input"
+                  placeholder="예: 의대, 컴퓨터공학, 경영학..."
+                  value={career}
+                  onChange={e => setCareer(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">관심 분야 / 좋아하는 과목</label>
+                <textarea
+                  className="form-textarea"
+                  placeholder="예: 수학, 과학 좋아함, 코딩 관심 있음..."
+                  value={interests}
+                  onChange={e => setInterests(e.target.value)}
+                />
+              </div>
+
+              <button className="apply-btn" onClick={applyProfile}>
+                ✨ 이 정보로 추천받기
+              </button>
+
+              {profile && (
+                <div className="profile-badge">
+                  <strong>적용된 프로필</strong><br />
+                  🎓 {profile.grade}학년 &nbsp;|&nbsp; 🎯 {profile.career || '진로 미입력'}<br />
+                  💡 {profile.interests || '관심사 미입력'}
+                </div>
+              )}
+            </aside>
+
+            {/* Chat Area */}
+            <main className="chat-area">
+              <div className="messages">
+                {messages.length === 0 ? (
+                  <div className="welcome">
+                    <div className="welcome-icon">🎓</div>
+                    <h2>안녕하세요! 필탑이에요</h2>
+                    <p>
+                      왼쪽에 학년·진로·관심사를 입력하고<br />
+                      <strong>추천받기</strong> 버튼을 누른 뒤 궁금한 점을 물어보세요.
+                    </p>
+                    <div className="suggestion-chips">
+                      {SUGGESTIONS.map(s => (
+                        <div key={s} className="chip" onClick={() => sendMessage(s)}>{s}</div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  messages.map((msg, i) => (
+                    <div key={i} className={`msg ${msg.role === 'user' ? 'user' : 'ai'}`}>
+                      <div className="msg-avatar">
+                        {msg.role === 'user' ? '🙋' : '🤖'}
+                      </div>
+                      <div className="msg-bubble">
+                        <pre>{msg.content}</pre>
+                        {msg.streaming && <span className="cursor" />}
+                      </div>
+                    </div>
+                  ))
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              <div className="input-bar">
+                <textarea
+                  ref={inputRef}
+                  className="msg-input"
+                  placeholder="과목 추천을 요청하거나 질문하세요... (Enter로 전송)"
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  rows={1}
+                  disabled={streaming}
+                />
+                <button
+                  className="send-btn"
+                  onClick={() => sendMessage(input)}
+                  disabled={!input.trim() || streaming}
+                  title="전송"
+                >
+                  {streaming ? '⏳' : '➤'}
+                </button>
+              </div>
+            </main>
+          </div>
+        </>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
