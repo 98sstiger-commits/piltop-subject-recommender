@@ -17,9 +17,6 @@ export default async function handler(req, res) {
 
   const { messages, system } = req.body;
 
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   try {
@@ -32,31 +29,20 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 2048,
-        stream: true,
+        max_tokens: 4096,
         system: system || '',
         messages,
       }),
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      const errorText = await response.text();
-      res.write(`data: ${JSON.stringify({ error: errorText })}\n\n`);
-      return res.end();
+      return res.status(response.status).json(data);
     }
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      res.write(decoder.decode(value, { stream: true }));
-    }
-
-    res.end();
+    res.json(data);
   } catch (error) {
-    res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
-    res.end();
+    res.status(500).json({ error: error.message });
   }
 }
