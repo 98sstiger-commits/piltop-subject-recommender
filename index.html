@@ -8,211 +8,372 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --green:  #1a3a28;
-      --green2: #122b1e;
-      --green3: #0e2218;
-      --cream:  #f2ead8;
-      --cream2: #e8dfc8;
-      --gold:   #c9a843;
-      --gold2:  #d4b95a;
-      --muted:  rgba(242,234,216,0.55);
-      --border: rgba(242,234,216,0.12);
-    }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Apple SD Gothic Neo','Malgun Gothic',-apple-system,sans-serif; background:var(--green3); color:var(--cream); min-height:100vh; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--green:#1a3a28;--green2:#122b1e;--green3:#0e2218;--cream:#f2ead8;--gold:#c9a843;--gold2:#d4b95a;--muted:rgba(242,234,216,0.55);--border:rgba(242,234,216,0.12)}
+    body{font-family:'Apple SD Gothic Neo','Malgun Gothic',-apple-system,sans-serif;background:var(--green3);color:var(--cream);min-height:100vh}
 
     /* HEADER */
-    .header { background:var(--green); border-bottom:1px solid var(--border); padding:0 48px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
-    .logo-name { font-size:17px; font-weight:800; color:var(--cream); letter-spacing:-0.3px; }
-    .logo-name span { color:var(--gold); }
-    .header-nav { display:flex; gap:28px; }
-    .header-nav a { font-size:14px; color:var(--muted); text-decoration:none; transition:color 0.2s; cursor:pointer; }
-    .header-nav a:hover { color:var(--cream); }
+    .header{background:var(--green);border-bottom:1px solid var(--border);padding:0 48px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .logo-name{font-size:17px;font-weight:800;color:var(--cream);letter-spacing:-.3px}
+    .logo-name span{color:var(--gold)}
+    .header-nav{display:flex;gap:28px}
+    .header-nav a{font-size:14px;color:var(--muted);text-decoration:none;cursor:pointer;transition:color .2s}
+    .header-nav a:hover{color:var(--cream)}
 
     /* HERO */
-    .hero { background:var(--green); padding:80px 24px 90px; text-align:center; border-bottom:1px solid var(--border); }
-    .hero-eyebrow { font-size:12px; font-weight:700; color:var(--gold); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:20px; }
-    .hero-title { font-size:clamp(36px,5vw,62px); font-weight:900; color:var(--cream); line-height:1.1; margin-bottom:12px; letter-spacing:-1.5px; }
-    .hero-title span { color:var(--gold); }
-    .hero-tagline { font-size:16px; color:var(--muted); margin-bottom:40px; line-height:1.8; font-weight:400; }
-    .hero-stats { display:flex; gap:40px; justify-content:center; margin-bottom:52px; flex-wrap:wrap; }
-    .hero-stat-num { font-size:24px; font-weight:800; color:var(--gold); line-height:1; }
-    .hero-stat-label { font-size:11px; color:var(--muted); margin-top:4px; }
+    .hero{background:var(--green);padding:72px 24px 80px;text-align:center;border-bottom:1px solid var(--border)}
+    .hero-eyebrow{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.14em;text-transform:uppercase;margin-bottom:18px}
+    .hero-title{font-size:clamp(32px,5vw,58px);font-weight:900;color:var(--cream);line-height:1.1;margin-bottom:12px;letter-spacing:-1.5px}
+    .hero-title span{color:var(--gold)}
+    .hero-tagline{font-size:15px;color:var(--muted);margin-bottom:36px;line-height:1.8}
+    .hero-stats{display:flex;gap:36px;justify-content:center;margin-bottom:44px;flex-wrap:wrap}
+    .hero-stat-num{font-size:22px;font-weight:800;color:var(--gold);line-height:1}
+    .hero-stat-label{font-size:11px;color:var(--muted);margin-top:4px}
 
     /* FORM */
-    .form-card { max-width:720px; margin:0 auto; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:18px; padding:32px 28px 24px; }
-    .form-row { display:grid; grid-template-columns:120px 1fr 1fr; gap:12px; margin-bottom:12px; }
-    .form-group { display:flex; flex-direction:column; }
-    .form-label { font-size:11px; font-weight:700; color:var(--muted); letter-spacing:0.06em; margin-bottom:7px; text-transform:uppercase; }
-    .required { color:var(--gold); margin-left:2px; }
-    .form-control { background:rgba(255,255,255,0.07); border:1px solid var(--border); border-radius:9px; color:var(--cream); padding:11px 14px; font-size:14px; outline:none; transition:border-color 0.2s; font-family:inherit; width:100%; }
-    .form-control:focus { border-color:var(--gold); background:rgba(255,255,255,0.1); }
-    .form-control::placeholder { color:rgba(242,234,216,0.28); }
-    select.form-control option { background:#1a3a28; color:var(--cream); }
-    .form-full { margin-bottom:20px; }
-    .submit-btn { width:100%; padding:14px; background:var(--gold); border:none; border-radius:10px; color:var(--green3); font-size:16px; font-weight:800; cursor:pointer; font-family:inherit; transition:background 0.2s,transform 0.1s; letter-spacing:-0.3px; }
-    .submit-btn:hover:not(:disabled) { background:var(--gold2); }
-    .submit-btn:active:not(:disabled) { transform:scale(0.98); }
-    .submit-btn:disabled { opacity:0.38; cursor:not-allowed; }
-    .error-box { margin-top:12px; padding:12px 16px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.28); border-radius:8px; color:#f87171; font-size:13px; }
+    .form-card{max-width:700px;margin:0 auto;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:18px;padding:28px 24px 22px}
+    .form-row{display:grid;grid-template-columns:110px 1fr 1fr;gap:10px;margin-bottom:10px}
+    .form-group{display:flex;flex-direction:column}
+    .form-label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;margin-bottom:6px;text-transform:uppercase}
+    .required{color:var(--gold);margin-left:2px}
+    .form-control{background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:9px;color:var(--cream);padding:10px 13px;font-size:14px;outline:none;transition:border-color .2s;font-family:inherit;width:100%}
+    .form-control:focus{border-color:var(--gold);background:rgba(255,255,255,.1)}
+    .form-control::placeholder{color:rgba(242,234,216,.25)}
+    select.form-control option{background:#1a3a28;color:var(--cream)}
+    .form-full{margin-bottom:18px}
+    .submit-btn{width:100%;padding:13px;background:var(--gold);border:none;border-radius:10px;color:var(--green3);font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;transition:background .2s,transform .1s}
+    .submit-btn:hover:not(:disabled){background:var(--gold2)}
+    .submit-btn:active:not(:disabled){transform:scale(.98)}
+    .submit-btn:disabled{opacity:.38;cursor:not-allowed}
+    .error-box{margin-top:10px;padding:11px 14px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.28);border-radius:8px;color:#f87171;font-size:13px;line-height:1.6}
 
     /* LOADING */
-    .loading-wrap { min-height:60vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
-    .spinner { width:44px; height:44px; border:3px solid rgba(201,168,67,0.2); border-top-color:var(--gold); border-radius:50%; animation:spin 0.85s linear infinite; }
-    @keyframes spin { to { transform:rotate(360deg); } }
-    .loading-text { color:var(--muted); font-size:15px; }
+    .loading-wrap{min-height:55vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+    .spinner{width:40px;height:40px;border:3px solid rgba(201,168,67,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .85s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-text{color:var(--cream);font-size:15px;font-weight:600}
+    .loading-steps{display:flex;flex-direction:column;gap:7px;margin-top:8px}
+    .loading-step{font-size:12px;display:flex;align-items:center;gap:7px;color:rgba(242,234,216,.28);transition:color .4s}
+    .loading-step.active{color:var(--gold)}
+    .loading-step.done{color:rgba(86,196,122,.7)}
+    .step-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
 
     /* RESULTS */
-    .results-wrap { padding:48px 24px 80px; }
-    .results-inner { max-width:1100px; margin:0 auto; }
-    .results-top { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:28px; flex-wrap:wrap; }
-    .results-title { font-size:24px; font-weight:800; color:var(--cream); margin-bottom:10px; letter-spacing:-0.5px; }
-    .chips { display:flex; gap:7px; flex-wrap:wrap; }
-    .chip { padding:4px 12px; background:rgba(201,168,67,0.15); border:1px solid rgba(201,168,67,0.3); color:var(--gold); border-radius:20px; font-size:12px; font-weight:600; }
-    .top-btns { display:flex; gap:9px; }
-    .btn-pdf { padding:9px 18px; background:var(--gold); border:none; border-radius:8px; color:var(--green3); font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; transition:background 0.15s; white-space:nowrap; }
-    .btn-pdf:hover { background:var(--gold2); }
-    .btn-back { padding:9px 18px; background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--muted); font-size:13px; cursor:pointer; font-family:inherit; transition:all 0.15s; white-space:nowrap; }
-    .btn-back:hover { border-color:var(--gold); color:var(--gold); }
-    .strategy { background:rgba(201,168,67,0.08); border:1px solid rgba(201,168,67,0.2); border-radius:14px; padding:24px 28px; margin-bottom:28px; }
-    .strategy-label { font-size:10px; font-weight:800; color:var(--gold); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:10px; }
-    .strategy-text { font-size:15px; line-height:1.85; color:var(--cream); }
-    .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
-    .scard { background:var(--green); border:1px solid var(--border); border-radius:14px; padding:20px; transition:border-color 0.2s,transform 0.2s; }
-    .scard:hover { border-color:rgba(201,168,67,0.35); transform:translateY(-2px); }
-    .cat { display:inline-block; padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700; margin-bottom:10px; letter-spacing:0.04em; }
-    .cat-g { background:rgba(91,156,246,0.15); color:#7bb3f8; border:1px solid rgba(91,156,246,0.25); }
-    .cat-c { background:rgba(201,168,67,0.15); color:var(--gold); border:1px solid rgba(201,168,67,0.25); }
-    .cat-f { background:rgba(86,196,122,0.15); color:#6dcf8a; border:1px solid rgba(86,196,122,0.25); }
-    .sname { font-size:20px; font-weight:800; color:var(--cream); margin-bottom:8px; letter-spacing:-0.3px; }
-    .sreason { font-size:13px; line-height:1.75; color:var(--muted); padding-bottom:14px; margin-bottom:14px; border-bottom:1px solid var(--border); }
-    .ext-label { font-size:10px; font-weight:700; color:var(--gold); letter-spacing:0.09em; text-transform:uppercase; margin-bottom:8px; }
-    .ext-list { list-style:none; display:flex; flex-direction:column; gap:7px; }
-    .ext-item { display:flex; align-items:flex-start; gap:8px; font-size:12px; color:var(--muted); line-height:1.55; }
-    .ext-dot { width:4px; height:4px; background:var(--gold); border-radius:50%; margin-top:5px; flex-shrink:0; }
-    .result-footer { margin-top:32px; text-align:center; font-size:11px; color:rgba(242,234,216,0.3); line-height:1.7; }
+    .results-wrap{padding:44px 24px 72px}
+    .results-inner{max-width:1000px;margin:0 auto}
+    .results-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+    .results-title{font-size:22px;font-weight:800;color:var(--cream);margin-bottom:9px;letter-spacing:-.5px}
+    .chips{display:flex;gap:7px;flex-wrap:wrap}
+    .chip{padding:4px 12px;background:rgba(201,168,67,.15);border:1px solid rgba(201,168,67,.3);color:var(--gold);border-radius:20px;font-size:12px;font-weight:600}
+    .top-btns{display:flex;gap:8px}
+    .btn-pdf{padding:8px 16px;background:var(--gold);border:none;border-radius:8px;color:var(--green3);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s;white-space:nowrap}
+    .btn-pdf:hover{background:var(--gold2)}
+    .btn-back{padding:8px 16px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:13px;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+    .btn-back:hover{border-color:var(--gold);color:var(--gold)}
 
-    /* GUIDE */
-    .guide-section { background:var(--green); border-top:1px solid var(--border); padding:64px 24px; }
-    .guide-inner { max-width:900px; margin:0 auto; }
-    .guide-title { font-size:22px; font-weight:800; color:var(--cream); margin-bottom:6px; }
-    .guide-sub { font-size:14px; color:var(--muted); margin-bottom:32px; }
-    .guide-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
-    .guide-card { background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:12px; padding:18px; }
-    .guide-cat { font-size:11px; font-weight:700; color:var(--gold); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:10px; }
-    .guide-item { font-size:12px; color:var(--muted); line-height:1.5; padding:5px 0; border-bottom:1px solid var(--border); }
-    .guide-item:last-child { border-bottom:none; }
+    /* STRATEGY */
+    .strategy{background:rgba(201,168,67,.08);border:1px solid rgba(201,168,67,.2);border-radius:14px;padding:22px 26px;margin-bottom:28px}
+    .strategy-label{font-size:10px;font-weight:800;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:9px}
+    .strategy-text{font-size:14px;line-height:1.85;color:var(--cream)}
 
-    /* RESPONSIVE */
-    @media (max-width:900px) { .grid,.guide-grid { grid-template-columns:repeat(2,1fr); } }
-    @media (max-width:640px) {
-      .form-row { grid-template-columns:1fr 1fr; }
-      .form-row > :first-child { grid-column:1/-1; }
-      .grid,.guide-grid { grid-template-columns:1fr; }
-      .header { padding:0 20px; }
-      .hero { padding:56px 16px 72px; }
-      .form-card { padding:22px 16px 18px; }
+    /* PRIORITY SECTION */
+    .priority-section{margin-bottom:28px}
+    .priority-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+    .priority-badge{padding:4px 14px;border-radius:20px;font-size:12px;font-weight:800;letter-spacing:.02em}
+    .pb-필수{background:#DC2626;color:#fff}
+    .pb-추천{background:rgba(201,168,67,.9);color:var(--green3)}
+    .pb-선택{background:rgba(255,255,255,.12);color:var(--cream)}
+    .priority-desc{font-size:12px;color:var(--muted)}
+    .priority-count{margin-left:auto;font-size:12px;color:var(--muted)}
+
+    /* SUBJECT CARDS */
+    .scards-필수{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .scards-추천{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .scards-선택{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+
+    .scard{background:var(--green);border:1px solid var(--border);border-radius:14px;padding:18px;transition:border-color .2s,transform .2s;position:relative}
+    .scard:hover{transform:translateY(-2px)}
+    .scard-필수{border-left:3px solid #DC2626}
+    .scard-필수:hover{border-color:#DC2626;border-left-color:#DC2626}
+    .scard-추천{border-left:3px solid var(--gold)}
+    .scard-추천:hover{border-color:rgba(201,168,67,.5);border-left-color:var(--gold)}
+    .scard-선택{border-left:3px solid rgba(255,255,255,.2)}
+    .scard-선택:hover{border-color:rgba(255,255,255,.25);border-left-color:rgba(255,255,255,.3)}
+
+    .scard-top{display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+    .sname{font-size:18px;font-weight:800;color:var(--cream);letter-spacing:-.3px}
+    .cat{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700}
+    .cat-g{background:rgba(91,156,246,.15);color:#7bb3f8;border:1px solid rgba(91,156,246,.25)}
+    .cat-c{background:rgba(201,168,67,.15);color:var(--gold);border:1px solid rgba(201,168,67,.25)}
+    .cat-f{background:rgba(86,196,122,.15);color:#6dcf8a;border:1px solid rgba(86,196,122,.25)}
+    .sreason{font-size:13px;line-height:1.7;color:var(--muted);padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--border)}
+    .ext-label{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.09em;text-transform:uppercase;margin-bottom:7px}
+    .ext-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+    .ext-item{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--muted);line-height:1.5}
+    .ext-dot{width:4px;height:4px;background:var(--gold);border-radius:50%;margin-top:5px;flex-shrink:0}
+    .result-footer{margin-top:28px;text-align:center;font-size:11px;color:rgba(242,234,216,.28);line-height:1.7}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(5px);animation:fadeIn .2s ease}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    .modal{background:var(--green);border:1px solid rgba(201,168,67,.22);border-radius:20px;max-width:660px;width:100%;max-height:82vh;overflow-y:auto;animation:slideUp .22s ease}
+    @keyframes slideUp{from{transform:translateY(18px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:22px 26px 0}
+    .modal-title{font-size:19px;font-weight:800;color:var(--cream)}
+    .modal-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px;line-height:1;transition:color .15s}
+    .modal-close:hover{color:var(--cream)}
+    .modal-body{padding:18px 26px 26px}
+    .hj-intro{font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:18px}
+    .hj-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .hj-card{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:12px;padding:15px}
+    .hj-card-title{font-size:13px;font-weight:700;color:var(--gold);margin-bottom:6px}
+    .hj-card-text{font-size:12px;color:var(--muted);line-height:1.7}
+    .subj-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .subj-group{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:14px}
+    .subj-group-title{font-size:11px;font-weight:800;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+    .subj-row{margin-bottom:7px}
+    .subj-type{font-size:10px;color:rgba(242,234,216,.35);font-weight:600;margin-bottom:2px}
+    .subj-items{font-size:11px;color:var(--muted);line-height:1.65}
+
+    @media(max-width:900px){
+      .scards-추천,.scards-선택{grid-template-columns:repeat(2,1fr)}
     }
-    @media (max-width:420px) { .form-row { grid-template-columns:1fr; } }
-
-    /* PRINT */
-    @media print {
-      .header,.top-btns,.result-footer,.guide-section { display:none !important; }
-      body { background:#fff; color:#111; }
-      .results-wrap { background:#fff; padding:20px 0; }
-      .scard { border:1px solid #ddd; break-inside:avoid; background:#fff; }
-      .sname,.results-title,.strategy-text { color:#111 !important; }
-      .sreason,.ext-item { color:#555 !important; }
-      .strategy { border:1px solid #c9a843; background:#fffbf0; }
+    @media(max-width:640px){
+      .form-row{grid-template-columns:1fr 1fr}
+      .form-row>:first-child{grid-column:1/-1}
+      .scards-필수,.scards-추천,.scards-선택{grid-template-columns:1fr}
+      .header{padding:0 20px}
+      .hero{padding:50px 16px 64px}
+      .form-card{padding:20px 14px 18px}
+      .hj-cards,.subj-grid{grid-template-columns:1fr}
+    }
+    @media(max-width:420px){.form-row{grid-template-columns:1fr}}
+    @media print{
+      .header,.top-btns,.result-footer,.modal-overlay{display:none!important}
+      body{background:#fff;color:#111}
+      .results-wrap{background:#fff;padding:20px 0}
+      .strategy{border:1px solid #c9a843;background:#fffbf0}
+      .strategy-text,.results-title{color:#111!important}
+      .scard{border:1px solid #ddd;break-inside:avoid;background:#fafafa}
+      .scard-필수{border-left:3px solid #DC2626}
+      .scard-추천{border-left:3px solid #c9a843}
+      .sname{color:#111!important}
+      .sreason,.ext-item{color:#444!important}
+      .priority-header{border-bottom:1px solid #ddd}
+      .pb-필수{background:#DC2626;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      .pb-추천{background:#c9a843;color:#0e2218;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     }
   </style>
 </head>
 <body>
-  <div id="root"></div>
-  <script type="text/babel">
-    const { useState } = React;
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect } = React;
 
-    const SYSTEM = `당신은 2022 개정 교육과정(고교학점제) 전문 과목추천 AI입니다.
-반드시 JSON만 응답하세요. 마크다운·코드블록 없이 순수 JSON만 출력하세요.
+const SYSTEM = `2022 개정 교육과정 고교학점제 과목추천 AI. 순수 JSON만 반환. 마크다운 없이.
 
 {
-  "overall_strategy": "과목 선택 전략 3~4문장",
+  "overall_strategy": "전략 2~3문장",
   "subjects": [
     {
       "name": "과목명",
-      "category": "일반선택",
-      "reason": "선택 이유 2~3문장 (진로·전공과 구체적 연계)",
-      "extracurricular": ["세특 탐구 주제 1", "세특 탐구 주제 2", "세특 탐구 주제 3"]
+      "category": "일반선택|진로선택|융합선택",
+      "priority": "필수|추천|선택",
+      "reason": "이유 2문장 (진로·전공·대학 연계)",
+      "extracurricular": ["핵심 세특 탐구 주제 1", "핵심 세특 탐구 주제 2"]
     }
   ]
 }
 
 규칙:
-- category: "일반선택" "진로선택" "융합선택" 중 하나
-- 총 6~9개, 카테고리 고루 분포
-- 반드시 아래 목록의 과목명만 사용 (구 교육과정 과목명 금지)
-- 희망 대학 있으면 해당 대학 권장 과목 반영
-- 고1: 고2~3 전체 로드맵, 고2: 고3 집중 추천
+- priority: 필수(전공 직결, 대학 권장) / 추천(강력 도움) / 선택(보완)
+- 총 7~9개: 필수 2~3개, 추천 3~4개, 선택 1~2개
+- 카테고리 고루 분포
+- 반드시 아래 2022 개정 교육과정 과목명만 사용
+- 희망 대학 있으면 해당 권장 과목 우선 반영
+- 고1: 고2~3 전체 로드맵, 고2: 고3 집중
 
-=== 2022 개정 교육과정 선택과목 ===
-[국어 일반] 화법과 언어, 독서와 작문, 문학
-[국어 진로] 주제 탐구 독서, 문학과 영상, 직무 의사소통
-[국어 융합] 독서 토론과 글쓰기, 매체 의사소통, 언어생활 탐구
-[수학 일반] 대수, 미적분Ⅰ, 확률과 통계
-[수학 진로] 미적분Ⅱ, 기하, 경제 수학, 인공지능 수학, 직업 수학
-[수학 융합] 수학과 문화, 실용 통계, 수학과제 탐구
-[영어 일반] 영어Ⅰ, 영어Ⅱ, 영어 독해와 작문
-[영어 진로] 영미 문학 읽기, 영어 발표와 토론, 심화 영어, 직무 영어
-[영어 융합] 실생활 영어 회화, 미디어 영어, 세계 문화와 영어
-[사회 일반] 세계시민과 지리, 세계사, 사회와 문화, 현대사회와 윤리
-[사회 진로] 한국지리 탐구, 도시의 미래 탐구, 동아시아사 주제 탐구, 정치, 경제, 법과 사회, 윤리와 사상, 인문학과 윤리, 국제 관계의 이해
-[사회 융합] 여행지리, 역사로 탐구하는 현대 세계, 사회문제 탐구, 금융과 경제생활, 윤리문제 탐구, 기후 변화와 지속가능한 세계
-[과학 일반] 물리학, 화학, 생명과학, 지구과학
-[과학 진로] 역학과 에너지, 전자기와 빛, 물질과 에너지, 화학 반응의 세계, 세포와 물질대사, 생물의 유전, 지구시스템과학, 행성우주과학
-[과학 융합] 과학의 역사와 문화, 기후 변화와 환경생태, 융합과학 탐구
-[정보 일반] 정보
-[정보 진로] 인공지능 기초, 데이터 과학, 소프트웨어와 생활
-[정보 융합] 정보 통신과 미래 사회
-[기술가정 일반] 기술·가정
-[기술가정 진로] 로봇과 공학세계, 공학 일반, 창의 공학 설계, 지식 재산 일반, 발명과 기업가 정신, 인공지능과 미래 생활, 아동발달과 부모, 생애 설계와 자립
-[기술가정 융합] 가정과학, 지식 재산과 경영, 미래 기술과 사회
-[예술 일반] 음악, 미술, 연극
-[예술 진로] 음악 연주와 창작, 음악 감상과 비평, 미술 창작, 미술 감상과 비평
-[예술 융합] 음악과 미디어, 미술과 매체
-[체육 일반] 체육1, 체육2
-[체육 진로] 운동과 건강, 스포츠 생활1, 스포츠 생활2
-[체육 융합] 스포츠 문화, 스포츠 과학
-[교양 진로] 진로와 직업, 생태와 환경, 인간과 철학, 삶과 종교, 논리와 사고, 인간과 심리, 교육의 이해, 보건
-[교양 융합] 인간과 경제활동, 논술`;
+과목목록:
+국어일반:화법과 언어,독서와 작문,문학|국어진로:주제 탐구 독서,문학과 영상,직무 의사소통|국어융합:독서 토론과 글쓰기,매체 의사소통,언어생활 탐구
+수학일반:대수,미적분Ⅰ,확률과 통계|수학진로:미적분Ⅱ,기하,경제 수학,인공지능 수학,직업 수학|수학융합:수학과 문화,실용 통계,수학과제 탐구
+영어일반:영어Ⅰ,영어Ⅱ,영어 독해와 작문|영어진로:심화 영어,영미 문학 읽기,영어 발표와 토론,직무 영어|영어융합:실생활 영어 회화,미디어 영어,세계 문화와 영어
+사회일반:세계시민과 지리,세계사,사회와 문화,현대사회와 윤리|사회진로:한국지리 탐구,도시의 미래 탐구,동아시아사 주제 탐구,정치,경제,법과 사회,윤리와 사상,인문학과 윤리,국제 관계의 이해|사회융합:여행지리,역사로 탐구하는 현대 세계,사회문제 탐구,금융과 경제생활,윤리문제 탐구,기후 변화와 지속가능한 세계
+과학일반:물리학,화학,생명과학,지구과학|과학진로:역학과 에너지,전자기와 빛,물질과 에너지,화학 반응의 세계,세포와 물질대사,생물의 유전,지구시스템과학,행성우주과학|과학융합:과학의 역사와 문화,기후 변화와 환경생태,융합과학 탐구
+정보일반:정보|정보진로:인공지능 기초,데이터 과학,소프트웨어와 생활|정보융합:정보 통신과 미래 사회
+기술가정일반:기술·가정|기술가정진로:로봇과 공학세계,공학 일반,창의 공학 설계,지식 재산 일반,발명과 기업가 정신,인공지능과 미래 생활,아동발달과 부모,생애 설계와 자립|기술가정융합:가정과학,지식 재산과 경영,미래 기술과 사회
+예술일반:음악,미술,연극|예술진로:음악 연주와 창작,음악 감상과 비평,미술 창작,미술 감상과 비평|예술융합:음악과 미디어,미술과 매체
+체육일반:체육1,체육2|체육진로:운동과 건강,스포츠 생활1,스포츠 생활2|체육융합:스포츠 문화,스포츠 과학
+교양진로:진로와 직업,생태와 환경,인간과 철학,삶과 종교,논리와 사고,인간과 심리,교육의 이해,보건|교양융합:인간과 경제활동,논술`;
 
-    function catClass(c) {
-      if (c==='일반선택') return 'cat cat-g';
-      if (c==='진로선택') return 'cat cat-c';
-      return 'cat cat-f';
+const LOADING_STEPS = ['진로·전공 분석','2022 개정 과목 매칭','대학 권장과목 확인','세특 탐구 주제 생성'];
+
+function catClass(c){
+  if(c==='일반선택') return 'cat cat-g';
+  if(c==='진로선택') return 'cat cat-c';
+  return 'cat cat-f';
+}
+
+const PRIORITY_META = {
+  필수: { desc:'전공 필수 · 대학 권장', color:'#DC2626' },
+  추천: { desc:'진로 강력 연계', color:'#c9a843' },
+  선택: { desc:'보완 · 심화', color:'rgba(255,255,255,0.5)' },
+};
+
+function HJModal({onClose}){
+  return(
+    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal">
+        <div className="modal-header">
+          <div className="modal-title">고교학점제란?</div>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          <p className="hj-intro">학생이 진로에 따라 다양한 과목을 선택·이수하고, 누적 학점이 기준에 도달하면 졸업을 인정받는 제도입니다. 2025년부터 전국 고등학교에 전면 시행되었습니다.</p>
+          <div className="hj-cards">
+            <div className="hj-card"><div className="hj-card-title">📚 과목 선택권 확대</div><div className="hj-card-text">진로에 맞는 다양한 과목을 직접 선택하여 이수할 수 있습니다.</div></div>
+            <div className="hj-card"><div className="hj-card-title">🎓 학점 기반 졸업</div><div className="hj-card-text">192학점 이상 이수 시 졸업 인정. 단순 출석이 아닌 학습 성취가 중요합니다.</div></div>
+            <div className="hj-card"><div className="hj-card-title">🏫 선택과목 3유형</div><div className="hj-card-text">일반선택(기본 심화) · 진로선택(전공 연계) · 융합선택(창의·융합)</div></div>
+            <div className="hj-card"><div className="hj-card-title">🎯 입시와의 연계</div><div className="hj-card-text">대학별 전공 관련 권장 과목이 있으므로, 진로에 맞는 과목 선택이 입시에 직결됩니다.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SubjModal({onClose}){
+  const groups=[
+    {title:'국어',items:[{type:'일반선택',list:'화법과 언어 · 독서와 작문 · 문학'},{type:'진로선택',list:'주제 탐구 독서 · 문학과 영상 · 직무 의사소통'},{type:'융합선택',list:'독서 토론과 글쓰기 · 매체 의사소통 · 언어생활 탐구'}]},
+    {title:'수학',items:[{type:'일반선택',list:'대수 · 미적분Ⅰ · 확률과 통계'},{type:'진로선택',list:'미적분Ⅱ · 기하 · 경제 수학 · 인공지능 수학'},{type:'융합선택',list:'수학과 문화 · 실용 통계 · 수학과제 탐구'}]},
+    {title:'영어',items:[{type:'일반선택',list:'영어Ⅰ · 영어Ⅱ · 영어 독해와 작문'},{type:'진로선택',list:'심화 영어 · 영미 문학 읽기 · 영어 발표와 토론 · 직무 영어'},{type:'융합선택',list:'실생활 영어 회화 · 미디어 영어 · 세계 문화와 영어'}]},
+    {title:'사회',items:[{type:'일반선택',list:'세계시민과 지리 · 세계사 · 사회와 문화 · 현대사회와 윤리'},{type:'진로선택',list:'한국지리 탐구 · 정치 · 경제 · 법과 사회 · 윤리와 사상 · 인문학과 윤리 · 국제 관계의 이해'},{type:'융합선택',list:'사회문제 탐구 · 금융과 경제생활 · 여행지리 · 윤리문제 탐구'}]},
+    {title:'과학',items:[{type:'일반선택',list:'물리학 · 화학 · 생명과학 · 지구과학'},{type:'진로선택',list:'역학과 에너지 · 전자기와 빛 · 화학 반응의 세계 · 세포와 물질대사 · 생물의 유전 · 행성우주과학'},{type:'융합선택',list:'과학의 역사와 문화 · 기후 변화와 환경생태 · 융합과학 탐구'}]},
+    {title:'정보·기술·가정',items:[{type:'일반선택',list:'정보 · 기술·가정'},{type:'진로선택',list:'인공지능 기초 · 데이터 과학 · 로봇과 공학세계 · 창의 공학 설계 · 아동발달과 부모 · 생애 설계와 자립'},{type:'융합선택',list:'정보 통신과 미래 사회 · 가정과학 · 미래 기술과 사회'}]},
+    {title:'예술·체육',items:[{type:'일반선택',list:'음악 · 미술 · 연극 · 체육1 · 체육2'},{type:'진로선택',list:'음악 연주와 창작 · 미술 창작 · 음악 감상과 비평 · 미술 감상과 비평 · 스포츠 생활1·2'},{type:'융합선택',list:'음악과 미디어 · 미술과 매체 · 스포츠 과학'}]},
+    {title:'교양',items:[{type:'진로선택',list:'진로와 직업 · 인간과 철학 · 인간과 심리 · 교육의 이해 · 보건 · 생태와 환경'},{type:'융합선택',list:'인간과 경제활동 · 논술'}]},
+  ];
+  return(
+    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal">
+        <div className="modal-header">
+          <div className="modal-title">2022 개정 선택과목 안내</div>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          <div className="subj-grid">
+            {groups.map((g,i)=>(
+              <div key={i} className="subj-group">
+                <div className="subj-group-title">{g.title}</div>
+                {g.items.map((item,j)=>(
+                  <div key={j} className="subj-row">
+                    <div className="subj-type">{item.type}</div>
+                    <div className="subj-items">{item.list}</div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LoadingView(){
+  const [step,setStep]=useState(0);
+  useEffect(()=>{
+    const t=setInterval(()=>setStep(s=>s<LOADING_STEPS.length-1?s+1:s),2400);
+    return()=>clearInterval(t);
+  },[]);
+  return(
+    <div className="loading-wrap">
+      <div className="spinner"/>
+      <p className="loading-text">{LOADING_STEPS[step]}...</p>
+      <div className="loading-steps">
+        {LOADING_STEPS.map((s,i)=>(
+          <div key={i} className={`loading-step ${i<step?'done':i===step?'active':''}`}>
+            <span className="step-dot"/><span>{s}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PrioritySection({priority, subjects}){
+  const meta = PRIORITY_META[priority];
+  const list = subjects.filter(s=>s.priority===priority);
+  if(!list.length) return null;
+  return(
+    <div className="priority-section">
+      <div className="priority-header">
+        <span className={`priority-badge pb-${priority}`}>{priority}</span>
+        <span className="priority-desc">{meta.desc}</span>
+        <span className="priority-count">{list.length}과목</span>
+      </div>
+      <div className={`scards-${priority}`}>
+        {list.map((s,i)=>(
+          <div key={i} className={`scard scard-${priority}`}>
+            <div className="scard-top">
+              <span className="sname">{s.name}</span>
+              <span className={catClass(s.category)}>{s.category}</span>
+            </div>
+            <p className="sreason">{s.reason}</p>
+            <div className="ext-label">세특 탐구 주제</div>
+            <ul className="ext-list">
+              {(s.extracurricular||[]).map((t,j)=>(
+                <li key={j} className="ext-item"><span className="ext-dot"/>{t}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function App(){
+  const [view,setView]=useState('form');
+  const [form,setForm]=useState({grade:'1',career:'',major:'',university:''});
+  const [results,setResults]=useState(null);
+  const [error,setError]=useState(null);
+  const [modal,setModal]=useState(null);
+
+  const set=k=>e=>setForm(p=>({...p,[k]:e.target.value}));
+  const valid=form.career.trim()&&form.major.trim();
+
+  const submit=async()=>{
+    setView('loading');setError(null);
+    const msg=`고${form.grade}학년, 희망진로: ${form.career}, 희망전공: ${form.major}${form.university?`, 희망대학: ${form.university}`:''}`;
+    try{
+      const res=await fetch('/api/proxy',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1500,system:SYSTEM,messages:[{role:'user',content:msg}]})
+      });
+      const data=await res.json();
+      if(!res.ok) throw new Error(data?.error?.message||data?.error||`오류 ${res.status}`);
+      const raw=data.content[0].text.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+      setResults(JSON.parse(raw));setView('results');
+    }catch(e){
+      setError(`오류: ${String(e.message)}`);setView('form');
     }
+  };
 
-    function Header({ onGuide }) {
-      return (
-        <header className="header">
-          <div className="logo-name">과목<span>나침반</span></div>
-          <nav className="header-nav">
-            <a onClick={onGuide}>고교학점제란?</a>
-            <a onClick={onGuide}>과목 안내</a>
-          </nav>
-        </header>
-      );
-    }
+  return(
+    <>
+      <header className="header">
+        <div className="logo-name">과목<span>나침반</span></div>
+        <nav className="header-nav">
+          <a onClick={()=>setModal('hj')}>고교학점제란?</a>
+          <a onClick={()=>setModal('subj')}>과목 안내</a>
+        </nav>
+      </header>
 
-    function FormView({ form, setForm, onSubmit, error }) {
-      const valid = form.career.trim() && form.major.trim();
-      const set = k => e => setForm(p => ({ ...p, [k]: e.target.value }));
-      return (
-        <main className="hero" id="top">
+      {view==='form'&&(
+        <main className="hero">
           <div className="hero-eyebrow">2022 개정 교육과정 · 고교학점제</div>
-          <h1 className="hero-title">진로가 정해지면<br /><span>과목은 AI가 설계합니다</span></h1>
-          <p className="hero-tagline">학년·진로·전공을 입력하면<br />맞춤 선택과목과 세특 탐구 주제까지 한번에</p>
+          <h1 className="hero-title">진로가 정해지면<br/><span>과목은 AI가 설계합니다</span></h1>
+          <p className="hero-tagline">학년·진로·전공을 입력하면<br/>맞춤 선택과목과 세특 탐구 주제까지 한번에</p>
           <div className="hero-stats">
             <div className="hero-stat"><div className="hero-stat-num">2022</div><div className="hero-stat-label">개정 교육과정</div></div>
             <div className="hero-stat"><div className="hero-stat-num">AI</div><div className="hero-stat-label">맞춤 분석</div></div>
@@ -229,36 +390,26 @@
               </div>
               <div className="form-group">
                 <label className="form-label">희망 진로<span className="required">*</span></label>
-                <input className="form-control" placeholder="예: 의사, 소프트웨어 엔지니어…" value={form.career} onChange={set('career')} />
+                <input className="form-control" placeholder="예: 의사, 소프트웨어 엔지니어…" value={form.career} onChange={set('career')}/>
               </div>
               <div className="form-group">
                 <label className="form-label">희망 전공<span className="required">*</span></label>
-                <input className="form-control" placeholder="예: 의학과, 컴퓨터공학과…" value={form.major} onChange={set('major')} />
+                <input className="form-control" placeholder="예: 의학과, 컴퓨터공학과…" value={form.major} onChange={set('major')}/>
               </div>
             </div>
             <div className="form-full">
-              <label className="form-label">희망 대학 <span style={{fontWeight:400,textTransform:'none',letterSpacing:0,color:'rgba(242,234,216,0.3)'}}>선택 — 입력 시 해당 대학 권장 과목 반영</span></label>
-              <input className="form-control" placeholder="예: 서울대, 연세대, 성균관대…" value={form.university} onChange={set('university')} />
+              <label className="form-label">희망 대학 <span style={{fontWeight:400,textTransform:'none',letterSpacing:0,color:'rgba(242,234,216,.28)'}}>선택 — 해당 대학 권장 과목 반영</span></label>
+              <input className="form-control" placeholder="예: 서울대, 연세대, 성균관대…" value={form.university} onChange={set('university')}/>
             </div>
-            <button className="submit-btn" onClick={onSubmit} disabled={!valid}>추천받기 →</button>
-            {error && <div className="error-box">{error}</div>}
+            <button className="submit-btn" onClick={submit} disabled={!valid}>추천받기 →</button>
+            {error&&<div className="error-box">{error}</div>}
           </div>
         </main>
-      );
-    }
+      )}
 
-    function LoadingView() {
-      return (
-        <div className="loading-wrap">
-          <div className="spinner" />
-          <p className="loading-text">과목을 분석하는 중입니다...</p>
-          <p style={{fontSize:'12px',color:'rgba(242,234,216,0.3)',marginTop:4}}>10~20초 소요됩니다</p>
-        </div>
-      );
-    }
+      {view==='loading'&&<LoadingView/>}
 
-    function ResultsView({ results, form, onBack }) {
-      return (
+      {view==='results'&&results&&(
         <div className="results-wrap">
           <div className="results-inner">
             <div className="results-top">
@@ -268,117 +419,35 @@
                   <span className="chip">고{form.grade}</span>
                   <span className="chip">{form.career}</span>
                   <span className="chip">{form.major}</span>
-                  {form.university && <span className="chip">{form.university}</span>}
+                  {form.university&&<span className="chip">{form.university}</span>}
                 </div>
               </div>
               <div className="top-btns">
-                <button className="btn-pdf" onClick={() => window.print()}>📄 PDF 저장</button>
-                <button className="btn-back" onClick={onBack}>← 다시 입력</button>
+                <button className="btn-pdf" onClick={()=>window.print()}>📄 PDF 저장</button>
+                <button className="btn-back" onClick={()=>{setView('form');setError(null);}}>← 다시 입력</button>
               </div>
             </div>
             <div className="strategy">
               <div className="strategy-label">과목 선택 전략</div>
               <p className="strategy-text">{results.overall_strategy}</p>
             </div>
-            <div className="grid">
-              {(results.subjects||[]).map((s,i) => (
-                <div key={i} className="scard">
-                  <span className={catClass(s.category)}>{s.category}</span>
-                  <div className="sname">{s.name}</div>
-                  <p className="sreason">{s.reason}</p>
-                  <div className="ext-label">세특 탐구 주제</div>
-                  <ul className="ext-list">
-                    {(s.extracurricular||[]).map((t,j) => (
-                      <li key={j} className="ext-item"><span className="ext-dot"/>{t}</li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
+            {['필수','추천','선택'].map(p=>(
+              <PrioritySection key={p} priority={p} subjects={results.subjects||[]}/>
+            ))}
             <div className="result-footer">
-              2022 개정 교육과정 기준 · 권장과목은 대학·학과별로 매년 변경됩니다 · 반드시 각 대학 입학처에서 최신 정보를 확인하세요 · 필탑학원
+              2022 개정 교육과정 기준 · 권장과목은 대학·학과별로 매년 변경됩니다 · 각 대학 입학처에서 최신 정보를 확인하세요 · 필탑학원
             </div>
           </div>
         </div>
-      );
-    }
+      )}
 
-    function GuideSection() {
-      const guides = [
-        { cat:'국어', items:['화법과 언어','독서와 작문','문학','주제 탐구 독서','독서 토론과 글쓰기'] },
-        { cat:'수학', items:['대수','미적분Ⅰ','확률과 통계','미적분Ⅱ','기하','경제 수학'] },
-        { cat:'영어', items:['영어Ⅰ','영어Ⅱ','영어 독해와 작문','심화 영어','영미 문학 읽기'] },
-        { cat:'과학', items:['물리학','화학','생명과학','지구과학','역학과 에너지','화학 반응의 세계','세포와 물질대사'] },
-        { cat:'사회', items:['사회와 문화','현대사회와 윤리','세계사','경제','법과 사회','사회문제 탐구'] },
-        { cat:'정보·기술', items:['정보','인공지능 기초','데이터 과학','로봇과 공학세계','창의 공학 설계'] },
-      ];
-      return (
-        <section className="guide-section" id="guide">
-          <div className="guide-inner">
-            <div className="guide-title">2022 개정 교육과정 과목 안내</div>
-            <div className="guide-sub">고교학점제에서 선택 가능한 주요 과목입니다</div>
-            <div className="guide-grid">
-              {guides.map((g,i) => (
-                <div key={i} className="guide-card">
-                  <div className="guide-cat">{g.cat}</div>
-                  {g.items.map((item,j) => <div key={j} className="guide-item">{item}</div>)}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      );
-    }
+      {modal==='hj'&&<HJModal onClose={()=>setModal(null)}/>}
+      {modal==='subj'&&<SubjModal onClose={()=>setModal(null)}/>}
+    </>
+  );
+}
 
-    function App() {
-      const [view, setView] = useState('form');
-      const [form, setForm] = useState({ grade:'1', career:'', major:'', university:'' });
-      const [results, setResults] = useState(null);
-      const [error, setError] = useState(null);
-
-      const scrollToGuide = () => document.getElementById('guide')?.scrollIntoView({behavior:'smooth'});
-
-      const submit = async () => {
-        setView('loading');
-        setError(null);
-        const msg = `학년: 고${form.grade}\n희망 진로: ${form.career}\n희망 전공: ${form.major}${form.university?`\n희망 대학: ${form.university}`:''}`;
-        try {
-          const res = await fetch('/api/proxy', {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({
-              model:'claude-haiku-4-5-20251001',
-              max_tokens:2000,
-              system:SYSTEM,
-              messages:[{role:'user',content:msg}]
-            }),
-          });
-          const data = await res.json();
-          if (!res.ok) {
-            throw new Error(data?.error?.message || data?.error || `서버 오류 (${res.status})`);
-          }
-          const raw = data.content[0].text.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
-          const parsed = JSON.parse(raw);
-          setResults(parsed);
-          setView('results');
-        } catch(e) {
-          setError(`오류: ${String(e.message)}`);
-          setView('form');
-        }
-      };
-
-      return (
-        <>
-          <Header onGuide={scrollToGuide} />
-          {view==='form' && <FormView form={form} setForm={setForm} onSubmit={submit} error={error} />}
-          {view==='loading' && <LoadingView />}
-          {view==='results' && results && <ResultsView results={results} form={form} onBack={()=>{setView('form');setError(null);}} />}
-          <GuideSection />
-        </>
-      );
-    }
-
-    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-  </script>
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
 </body>
 </html>
