@@ -1,174 +1,285 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>과목나침반 - AI 선택과목 추천</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>과목나침반 — 진로 맞춤 선택과목 AI 설계</title>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--green:#1a3a28;--green2:#122b1e;--green3:#0e2218;--cream:#f2ead8;--gold:#c9a843;--gold2:#d4b95a;--muted:rgba(242,234,216,0.55);--border:rgba(242,234,216,0.12)}
-    body{font-family:'Apple SD Gothic Neo','Malgun Gothic',-apple-system,sans-serif;background:var(--green3);color:var(--cream);min-height:100vh}
+    :root{
+      --g:#1a3a28;--g2:#122b1e;--g3:#0e2218;--g4:#0a1a12;
+      --cream:#f5f0e6;--cream2:#ede6d6;--cream3:#e0d8c4;
+      --gold:#c9a843;--gold2:#d4b95a;--gold3:#b8962e;
+      --text:#1a1a1a;--muted:#6b6b5a;
+      --dg-cream:rgba(242,234,216,0.55);--dg-border:rgba(242,234,216,0.12);
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:'Apple SD Gothic Neo','Malgun Gothic',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:var(--text);min-height:100vh}
 
-    /* HEADER */
-    .header{background:var(--green);border-bottom:1px solid var(--border);padding:0 48px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-    .logo-name{font-size:17px;font-weight:800;color:var(--cream);letter-spacing:-.3px}
-    .logo-name span{color:var(--gold)}
-    .header-nav{display:flex;gap:28px}
-    .header-nav a{font-size:14px;color:var(--muted);text-decoration:none;cursor:pointer;transition:color .2s}
-    .header-nav a:hover{color:var(--cream)}
+    /* ── NAV ── */
+    .nav{position:fixed;top:0;left:0;right:0;z-index:200;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;transition:background .3s,border .3s}
+    .nav.scrolled{background:var(--g);border-bottom:1px solid var(--dg-border)}
+    .nav-logo{font-size:16px;font-weight:800;color:#fff;letter-spacing:-.3px;cursor:pointer}
+    .nav-logo span{color:var(--gold)}
+    .nav-btn{padding:8px 20px;background:var(--gold);border:none;border-radius:8px;color:var(--g3);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s}
+    .nav-btn:hover{background:var(--gold2)}
 
-    /* HERO */
-    .hero{background:var(--green);padding:72px 24px 80px;text-align:center;border-bottom:1px solid var(--border)}
-    .hero-eyebrow{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.14em;text-transform:uppercase;margin-bottom:18px}
-    .hero-title{font-size:clamp(32px,5vw,58px);font-weight:900;color:var(--cream);line-height:1.1;margin-bottom:12px;letter-spacing:-1.5px}
+    /* ── HERO (dark) ── */
+    .hero{background:var(--g3);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 60px;position:relative;overflow:hidden}
+    .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 30%,rgba(201,168,67,.07),transparent)}
+    .hero-eyebrow{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.18em;text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+    .hero-dot{width:6px;height:6px;background:var(--gold);border-radius:50%;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .hero-title{font-size:clamp(52px,8vw,96px);font-weight:900;color:#fff;line-height:1.0;letter-spacing:-3px;margin-bottom:16px;position:relative;z-index:1}
     .hero-title span{color:var(--gold)}
-    .hero-tagline{font-size:15px;color:var(--muted);margin-bottom:36px;line-height:1.8}
-    .hero-stats{display:flex;gap:36px;justify-content:center;margin-bottom:44px;flex-wrap:wrap}
-    .hero-stat-num{font-size:22px;font-weight:800;color:var(--gold);line-height:1}
-    .hero-stat-label{font-size:11px;color:var(--muted);margin-top:4px}
+    .hero-sub{font-size:16px;color:rgba(242,234,216,.6);line-height:1.8;margin-bottom:44px;max-width:480px}
+    .hero-cta{padding:16px 48px;background:var(--gold);border:none;border-radius:12px;color:var(--g3);font-size:17px;font-weight:800;cursor:pointer;font-family:inherit;transition:background .2s,transform .1s;letter-spacing:-.3px}
+    .hero-cta:hover{background:var(--gold2)}
+    .hero-cta:active{transform:scale(.97)}
+    .hero-stats{display:flex;gap:48px;margin-top:56px;flex-wrap:wrap;justify-content:center;position:relative;z-index:1}
+    .hero-stat-num{font-size:28px;font-weight:900;color:var(--gold);line-height:1}
+    .hero-stat-label{font-size:12px;color:rgba(242,234,216,.5);margin-top:5px}
+    .hero-scroll{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;color:rgba(242,234,216,.3);font-size:11px;letter-spacing:.1em}
+    .hero-scroll-line{width:1px;height:32px;background:linear-gradient(to bottom,rgba(201,168,67,.5),transparent);animation:scrollLine 1.8s ease-in-out infinite}
+    @keyframes scrollLine{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}100%{transform:scaleY(0);transform-origin:bottom}}
 
-    /* FORM */
-    .form-card{max-width:700px;margin:0 auto;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:18px;padding:28px 24px 22px}
+    /* ── SECTION BASE ── */
+    .section{padding:80px 24px}
+    .section-inner{max-width:1000px;margin:0 auto}
+    .section-label{font-size:11px;font-weight:700;color:var(--gold3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px}
+    .section-title{font-size:clamp(28px,4vw,42px);font-weight:900;color:var(--text);line-height:1.2;letter-spacing:-1px;margin-bottom:14px}
+    .section-sub{font-size:15px;color:var(--muted);line-height:1.8;max-width:580px}
+
+    /* ── WHY 3 CARDS ── */
+    .why-section{background:var(--cream);padding:80px 24px}
+    .why-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+    .why-card{background:var(--g);border-radius:16px;padding:28px 24px;color:#fff}
+    .why-card-num{font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.1em;margin-bottom:16px}
+    .why-card-title{font-size:22px;font-weight:800;color:#fff;margin-bottom:8px}
+    .why-card-sub{font-size:12px;color:rgba(242,234,216,.5);margin-bottom:16px}
+    .why-card-divider{height:1px;background:rgba(242,234,216,.12);margin-bottom:14px}
+    .why-card-text{font-size:13px;color:rgba(242,234,216,.65);line-height:1.75}
+
+    /* ── HOW (steps) ── */
+    .how-section{background:#fff;padding:80px 24px}
+    .how-step{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin-top:64px}
+    .how-step:first-of-type{margin-top:48px}
+    .how-step.reverse{direction:rtl}
+    .how-step.reverse>*{direction:ltr}
+    .step-num-wrap{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+    .step-num{width:36px;height:36px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:14px;font-weight:800;flex-shrink:0}
+    .step-label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+    .step-title{font-size:clamp(24px,3vw,34px);font-weight:900;color:var(--text);line-height:1.2;letter-spacing:-1px;margin-bottom:14px}
+    .step-desc{font-size:14px;color:var(--muted);line-height:1.85;margin-bottom:18px}
+    .step-points{list-style:none;display:flex;flex-direction:column;gap:8px}
+    .step-point{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text)}
+    .step-check{width:20px;height:20px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:11px;flex-shrink:0;margin-top:1px}
+    .step-tip{background:rgba(201,168,67,.08);border:1px solid rgba(201,168,67,.2);border-radius:10px;padding:12px 16px;margin-top:16px;font-size:12px;color:var(--muted);line-height:1.7}
+    .step-tip strong{color:var(--gold3)}
+
+    /* MOCKUP */
+    .mockup{background:var(--g);border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+    .mockup-bar{display:flex;gap:6px;margin-bottom:16px}
+    .mockup-dot{width:10px;height:10px;border-radius:50%}
+    .mockup-eyebrow{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;text-align:center;margin-bottom:8px}
+    .mockup-title{font-size:22px;font-weight:900;color:#fff;text-align:center;margin-bottom:4px}
+    .mockup-sub{font-size:12px;color:rgba(242,234,216,.45);text-align:center;margin-bottom:20px}
+    .mockup-card{background:rgba(255,255,255,.06);border:1px solid rgba(242,234,216,.1);border-radius:10px;padding:14px}
+    .mockup-label{font-size:10px;color:rgba(242,234,216,.4);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em}
+    .mockup-input{background:rgba(255,255,255,.08);border:1px solid rgba(201,168,67,.3);border-radius:7px;padding:10px 12px;color:#fff;font-size:13px;width:100%;margin-bottom:10px;font-family:inherit}
+    .mockup-btn{width:100%;padding:11px;background:var(--gold);border:none;border-radius:8px;color:var(--g3);font-size:14px;font-weight:800;text-align:center;font-family:inherit}
+
+    .mockup-result{background:rgba(255,255,255,.06);border:1px solid rgba(242,234,216,.1);border-radius:10px;overflow:hidden}
+    .mockup-result-header{background:rgba(201,168,67,.12);padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
+    .mockup-result-tag{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.06em}
+    .mockup-result-body{padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+    .mockup-scard{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);border-radius:8px;padding:10px 12px}
+    .mockup-scard-left{flex:1}
+    .mockup-scard-name{font-size:13px;font-weight:700;color:#fff}
+    .mockup-scard-cat{font-size:10px;color:rgba(242,234,216,.4);margin-top:2px}
+    .mockup-badge{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700}
+    .mb-필수{background:#DC2626;color:#fff}
+    .mb-추천{background:rgba(201,168,67,.9);color:var(--g3)}
+    .mb-선택{background:rgba(255,255,255,.15);color:rgba(242,234,216,.8)}
+
+    .mockup-link{background:rgba(255,255,255,.06);border:1px solid rgba(201,168,67,.3);border-radius:10px;padding:14px}
+    .mockup-link-label{font-size:10px;color:rgba(242,234,216,.4);margin-bottom:8px;font-weight:700;letter-spacing:.06em}
+    .mockup-link-row{display:flex;gap:8px;align-items:center}
+    .mockup-link-url{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(242,234,216,.12);border-radius:6px;padding:8px 10px;color:rgba(242,234,216,.5);font-size:11px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+    .mockup-copy-btn{padding:8px 12px;background:var(--gold);border:none;border-radius:6px;color:var(--g3);font-size:11px;font-weight:700;white-space:nowrap;font-family:inherit}
+
+    /* ── CTA ── */
+    .cta-section{background:var(--g);padding:80px 24px;text-align:center}
+    .cta-title{font-size:clamp(28px,4vw,44px);font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:12px}
+    .cta-title span{color:var(--gold)}
+    .cta-sub{font-size:15px;color:rgba(242,234,216,.55);margin-bottom:36px;line-height:1.8}
+    .cta-btn{padding:16px 52px;background:var(--gold);border:none;border-radius:12px;color:var(--g3);font-size:17px;font-weight:800;cursor:pointer;font-family:inherit;transition:background .2s,transform .1s}
+    .cta-btn:hover{background:var(--gold2)}
+
+    /* ── FOOTER ── */
+    .footer{background:var(--g4);padding:28px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+    .footer-logo{font-size:14px;font-weight:800;color:rgba(242,234,216,.6)}
+    .footer-logo span{color:var(--gold)}
+    .footer-copy{font-size:12px;color:rgba(242,234,216,.28)}
+
+    /* ── FORM PAGE ── */
+    .form-page{background:var(--g3);min-height:100vh;display:flex;flex-direction:column}
+    .form-page-header{background:var(--g);border-bottom:1px solid var(--dg-border);padding:0 48px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .form-page-logo{font-size:16px;font-weight:800;color:#fff;cursor:pointer}
+    .form-page-logo span{color:var(--gold)}
+    .form-page-back{font-size:13px;color:var(--dg-cream);cursor:pointer;background:none;border:none;font-family:inherit;transition:color .15s}
+    .form-page-back:hover{color:#fff}
+    .form-hero{background:var(--g);padding:52px 24px 60px;text-align:center;border-bottom:1px solid var(--dg-border)}
+    .form-eyebrow{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px}
+    .form-title{font-size:clamp(28px,4vw,44px);font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:10px}
+    .form-title span{color:var(--gold)}
+    .form-tagline{font-size:15px;color:var(--dg-cream);line-height:1.8}
+    .form-body{flex:1;padding:40px 24px 72px;display:flex;justify-content:center;align-items:flex-start}
+    .form-card{max-width:680px;width:100%;background:rgba(255,255,255,.05);border:1px solid var(--dg-border);border-radius:18px;padding:28px 24px 22px}
     .form-row{display:grid;grid-template-columns:110px 1fr 1fr;gap:10px;margin-bottom:10px}
-    .form-group{display:flex;flex-direction:column}
-    .form-label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;margin-bottom:6px;text-transform:uppercase}
-    .required{color:var(--gold);margin-left:2px}
-    .form-control{background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:9px;color:var(--cream);padding:10px 13px;font-size:14px;outline:none;transition:border-color .2s;font-family:inherit;width:100%}
-    .form-control:focus{border-color:var(--gold);background:rgba(255,255,255,.1)}
-    .form-control::placeholder{color:rgba(242,234,216,.25)}
-    select.form-control option{background:#1a3a28;color:var(--cream)}
-    .form-full{margin-bottom:18px}
-    .submit-btn{width:100%;padding:13px;background:var(--gold);border:none;border-radius:10px;color:var(--green3);font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;transition:background .2s,transform .1s}
-    .submit-btn:hover:not(:disabled){background:var(--gold2)}
-    .submit-btn:active:not(:disabled){transform:scale(.98)}
-    .submit-btn:disabled{opacity:.38;cursor:not-allowed}
-    .error-box{margin-top:10px;padding:11px 14px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.28);border-radius:8px;color:#f87171;font-size:13px;line-height:1.6}
+    .f-group{display:flex;flex-direction:column}
+    .f-label{font-size:11px;font-weight:700;color:var(--dg-cream);letter-spacing:.06em;margin-bottom:6px;text-transform:uppercase}
+    .req{color:var(--gold);margin-left:2px}
+    .f-control{background:rgba(255,255,255,.07);border:1px solid var(--dg-border);border-radius:9px;color:#fff;padding:10px 13px;font-size:14px;outline:none;transition:border-color .2s;font-family:inherit;width:100%}
+    .f-control:focus{border-color:var(--gold);background:rgba(255,255,255,.1)}
+    .f-control::placeholder{color:rgba(242,234,216,.22)}
+    select.f-control option{background:#1a3a28;color:#fff}
+    .f-full{margin-bottom:18px}
+    .f-submit{width:100%;padding:13px;background:var(--gold);border:none;border-radius:10px;color:var(--g3);font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;transition:background .2s,transform .1s}
+    .f-submit:hover:not(:disabled){background:var(--gold2)}
+    .f-submit:disabled{opacity:.38;cursor:not-allowed}
+    .f-error{margin-top:10px;padding:11px 14px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.28);border-radius:8px;color:#f87171;font-size:13px;line-height:1.6}
 
-    /* LOADING */
-    .loading-wrap{min-height:55vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
-    .spinner{width:40px;height:40px;border:3px solid rgba(201,168,67,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .85s linear infinite}
+    /* ── LOADING ── */
+    .loading-page{background:var(--g3);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+    .spinner{width:42px;height:42px;border:3px solid rgba(201,168,67,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .85s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .loading-text{color:var(--cream);font-size:15px;font-weight:600}
+    .loading-text{color:#fff;font-size:15px;font-weight:600}
     .loading-steps{display:flex;flex-direction:column;gap:7px;margin-top:8px}
-    .loading-step{font-size:12px;display:flex;align-items:center;gap:7px;color:rgba(242,234,216,.28);transition:color .4s}
-    .loading-step.active{color:var(--gold)}
-    .loading-step.done{color:rgba(86,196,122,.7)}
-    .step-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+    .l-step{font-size:12px;display:flex;align-items:center;gap:7px;color:rgba(242,234,216,.25);transition:color .4s}
+    .l-step.active{color:var(--gold)}
+    .l-step.done{color:rgba(86,196,122,.7)}
+    .l-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
 
-    /* RESULTS */
-    .results-wrap{padding:44px 24px 72px}
-    .results-inner{max-width:1000px;margin:0 auto}
-    .results-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
-    .results-title{font-size:22px;font-weight:800;color:var(--cream);margin-bottom:9px;letter-spacing:-.5px}
-    .chips{display:flex;gap:7px;flex-wrap:wrap}
+    /* ── RESULTS PAGE ── */
+    .results-page{background:var(--g3);min-height:100vh;display:flex;flex-direction:column}
+    .results-body{flex:1;padding:36px 24px 72px}
+    .results-inner{max-width:980px;margin:0 auto}
+    .results-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+    .results-title-main{font-size:22px;font-weight:800;color:#fff;margin-bottom:8px;letter-spacing:-.5px}
+    .chips{display:flex;gap:6px;flex-wrap:wrap}
     .chip{padding:4px 12px;background:rgba(201,168,67,.15);border:1px solid rgba(201,168,67,.3);color:var(--gold);border-radius:20px;font-size:12px;font-weight:600}
-    .top-btns{display:flex;gap:8px}
-    .btn-pdf{padding:8px 16px;background:var(--gold);border:none;border-radius:8px;color:var(--green3);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s;white-space:nowrap}
-    .btn-pdf:hover{background:var(--gold2)}
-    .btn-back{padding:8px 16px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:13px;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
-    .btn-back:hover{border-color:var(--gold);color:var(--gold)}
+    .r-btns{display:flex;gap:8px;flex-wrap:wrap}
+    .r-btn-pdf{padding:8px 16px;background:var(--gold);border:none;border-radius:8px;color:var(--g3);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s;white-space:nowrap}
+    .r-btn-pdf:hover{background:var(--gold2)}
+    .r-btn-link{padding:8px 16px;background:rgba(255,255,255,.1);border:1px solid var(--dg-border);border-radius:8px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+    .r-btn-link:hover{background:rgba(255,255,255,.15)}
+    .r-btn-back{padding:8px 16px;background:transparent;border:1px solid var(--dg-border);border-radius:8px;color:var(--dg-cream);font-size:13px;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+    .r-btn-back:hover{border-color:var(--gold);color:var(--gold)}
 
-    /* STRATEGY */
-    .strategy{background:rgba(201,168,67,.08);border:1px solid rgba(201,168,67,.2);border-radius:14px;padding:22px 26px;margin-bottom:28px}
-    .strategy-label{font-size:10px;font-weight:800;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:9px}
-    .strategy-text{font-size:14px;line-height:1.85;color:var(--cream)}
+    /* LINK COPIED TOAST */
+    .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--g);border:1px solid rgba(201,168,67,.3);color:var(--gold);padding:10px 22px;border-radius:10px;font-size:13px;font-weight:600;z-index:300;animation:toastIn .3s ease;white-space:nowrap}
+    @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
-    /* PRIORITY SECTION */
-    .priority-section{margin-bottom:28px}
-    .priority-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
-    .priority-badge{padding:4px 14px;border-radius:20px;font-size:12px;font-weight:800;letter-spacing:.02em}
+    /* LINK BOX */
+    .link-box{background:rgba(201,168,67,.06);border:1px solid rgba(201,168,67,.2);border-radius:12px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .link-box-label{font-size:11px;font-weight:700;color:var(--gold);white-space:nowrap}
+    .link-box-url{flex:1;font-size:12px;color:var(--dg-cream);background:rgba(255,255,255,.05);border:1px solid var(--dg-border);border-radius:7px;padding:7px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+    .link-box-copy{padding:7px 14px;background:var(--gold);border:none;border-radius:7px;color:var(--g3);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+
+    .strategy-box{background:rgba(201,168,67,.08);border:1px solid rgba(201,168,67,.2);border-radius:14px;padding:20px 24px;margin-bottom:24px}
+    .strategy-label{font-size:10px;font-weight:800;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+    .strategy-text{font-size:14px;line-height:1.85;color:#fff}
+
+    .priority-section{margin-bottom:24px}
+    .priority-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--dg-border)}
+    .p-badge{padding:4px 14px;border-radius:20px;font-size:12px;font-weight:800}
     .pb-필수{background:#DC2626;color:#fff}
-    .pb-추천{background:rgba(201,168,67,.9);color:var(--green3)}
-    .pb-선택{background:rgba(255,255,255,.12);color:var(--cream)}
-    .priority-desc{font-size:12px;color:var(--muted)}
-    .priority-count{margin-left:auto;font-size:12px;color:var(--muted)}
-
-    /* SUBJECT CARDS */
+    .pb-추천{background:rgba(201,168,67,.9);color:var(--g3)}
+    .pb-선택{background:rgba(255,255,255,.12);color:#fff}
+    .p-desc{font-size:12px;color:var(--dg-cream)}
+    .p-count{margin-left:auto;font-size:12px;color:rgba(242,234,216,.35)}
     .scards-필수{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
     .scards-추천{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
     .scards-선택{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-
-    .scard{background:var(--green);border:1px solid var(--border);border-radius:14px;padding:18px;transition:border-color .2s,transform .2s;position:relative}
+    .scard{background:var(--g);border:1px solid var(--dg-border);border-radius:14px;padding:16px;transition:border-color .2s,transform .2s}
     .scard:hover{transform:translateY(-2px)}
     .scard-필수{border-left:3px solid #DC2626}
-    .scard-필수:hover{border-color:#DC2626;border-left-color:#DC2626}
     .scard-추천{border-left:3px solid var(--gold)}
-    .scard-추천:hover{border-color:rgba(201,168,67,.5);border-left-color:var(--gold)}
-    .scard-선택{border-left:3px solid rgba(255,255,255,.2)}
-    .scard-선택:hover{border-color:rgba(255,255,255,.25);border-left-color:rgba(255,255,255,.3)}
-
-    .scard-top{display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap}
-    .sname{font-size:18px;font-weight:800;color:var(--cream);letter-spacing:-.3px}
+    .scard-선택{border-left:3px solid rgba(255,255,255,.18)}
+    .scard-top{display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+    .sname{font-size:17px;font-weight:800;color:#fff;letter-spacing:-.3px}
     .cat{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700}
     .cat-g{background:rgba(91,156,246,.15);color:#7bb3f8;border:1px solid rgba(91,156,246,.25)}
     .cat-c{background:rgba(201,168,67,.15);color:var(--gold);border:1px solid rgba(201,168,67,.25)}
     .cat-f{background:rgba(86,196,122,.15);color:#6dcf8a;border:1px solid rgba(86,196,122,.25)}
-    .sreason{font-size:13px;line-height:1.7;color:var(--muted);padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--border)}
-    .ext-label{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.09em;text-transform:uppercase;margin-bottom:7px}
-    .ext-list{list-style:none;display:flex;flex-direction:column;gap:6px}
-    .ext-item{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--muted);line-height:1.5}
+    .sreason{font-size:13px;line-height:1.7;color:var(--dg-cream);padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--dg-border)}
+    .ext-label{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.09em;text-transform:uppercase;margin-bottom:6px}
+    .ext-list{list-style:none;display:flex;flex-direction:column;gap:5px}
+    .ext-item{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--dg-cream);line-height:1.5}
     .ext-dot{width:4px;height:4px;background:var(--gold);border-radius:50%;margin-top:5px;flex-shrink:0}
-    .result-footer{margin-top:28px;text-align:center;font-size:11px;color:rgba(242,234,216,.28);line-height:1.7}
+    .result-footer{margin-top:24px;text-align:center;font-size:11px;color:rgba(242,234,216,.25);line-height:1.7}
 
     /* MODAL */
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(5px);animation:fadeIn .2s ease}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-    .modal{background:var(--green);border:1px solid rgba(201,168,67,.22);border-radius:20px;max-width:660px;width:100%;max-height:82vh;overflow-y:auto;animation:slideUp .22s ease}
-    @keyframes slideUp{from{transform:translateY(18px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .modal{background:var(--g);border:1px solid rgba(201,168,67,.22);border-radius:20px;max-width:640px;width:100%;max-height:82vh;overflow-y:auto;animation:slideUp .22s ease}
+    @keyframes slideUp{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
     .modal-header{display:flex;align-items:center;justify-content:space-between;padding:22px 26px 0}
-    .modal-title{font-size:19px;font-weight:800;color:var(--cream)}
-    .modal-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px;line-height:1;transition:color .15s}
-    .modal-close:hover{color:var(--cream)}
-    .modal-body{padding:18px 26px 26px}
-    .hj-intro{font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:18px}
+    .modal-title{font-size:18px;font-weight:800;color:#fff}
+    .modal-close{background:none;border:none;color:var(--dg-cream);font-size:20px;cursor:pointer;line-height:1;transition:color .15s}
+    .modal-close:hover{color:#fff}
+    .modal-body{padding:16px 26px 26px}
+    .hj-intro{font-size:14px;color:var(--dg-cream);line-height:1.8;margin-bottom:16px}
     .hj-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .hj-card{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:12px;padding:15px}
+    .hj-card{background:rgba(255,255,255,.05);border:1px solid var(--dg-border);border-radius:12px;padding:14px}
     .hj-card-title{font-size:13px;font-weight:700;color:var(--gold);margin-bottom:6px}
-    .hj-card-text{font-size:12px;color:var(--muted);line-height:1.7}
+    .hj-card-text{font-size:12px;color:var(--dg-cream);line-height:1.7}
     .subj-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .subj-group{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:14px}
-    .subj-group-title{font-size:11px;font-weight:800;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid var(--border)}
-    .subj-row{margin-bottom:7px}
-    .subj-type{font-size:10px;color:rgba(242,234,216,.35);font-weight:600;margin-bottom:2px}
-    .subj-items{font-size:11px;color:var(--muted);line-height:1.65}
+    .subj-group{background:rgba(255,255,255,.04);border:1px solid var(--dg-border);border-radius:12px;padding:14px}
+    .subj-group-title{font-size:11px;font-weight:800;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--dg-border)}
+    .subj-row{margin-bottom:6px}
+    .subj-type{font-size:10px;color:rgba(242,234,216,.33);font-weight:600;margin-bottom:2px}
+    .subj-items{font-size:11px;color:var(--dg-cream);line-height:1.65}
 
+    /* RESPONSIVE */
     @media(max-width:900px){
+      .why-cards{grid-template-columns:1fr}
+      .how-step{grid-template-columns:1fr;gap:24px}
+      .how-step.reverse{direction:ltr}
       .scards-추천,.scards-선택{grid-template-columns:repeat(2,1fr)}
     }
     @media(max-width:640px){
+      .nav,.footer{padding:0 20px}
+      .form-page-header{padding:0 20px}
       .form-row{grid-template-columns:1fr 1fr}
       .form-row>:first-child{grid-column:1/-1}
       .scards-필수,.scards-추천,.scards-선택{grid-template-columns:1fr}
-      .header{padding:0 20px}
-      .hero{padding:50px 16px 64px}
-      .form-card{padding:20px 14px 18px}
       .hj-cards,.subj-grid{grid-template-columns:1fr}
+      .r-btns{flex-direction:column;width:100%}
+      .results-top{flex-direction:column}
     }
-    @media(max-width:420px){.form-row{grid-template-columns:1fr}}
     @media print{
-      .header,.top-btns,.result-footer,.modal-overlay{display:none!important}
-      body{background:#fff;color:#111}
-      .results-wrap{background:#fff;padding:20px 0}
-      .strategy{border:1px solid #c9a843;background:#fffbf0}
-      .strategy-text,.results-title{color:#111!important}
-      .scard{border:1px solid #ddd;break-inside:avoid;background:#fafafa}
+      .form-page-header,.r-btns,.link-box,.result-footer,.modal-overlay{display:none!important}
+      body{background:#fff}
+      .results-page,.results-body{background:#fff}
+      .scard{background:#fafafa;border:1px solid #ddd;break-inside:avoid}
       .scard-필수{border-left:3px solid #DC2626}
       .scard-추천{border-left:3px solid #c9a843}
-      .sname{color:#111!important}
-      .sreason,.ext-item{color:#444!important}
-      .priority-header{border-bottom:1px solid #ddd}
-      .pb-필수{background:#DC2626;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-      .pb-추천{background:#c9a843;color:#0e2218;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      .sname,.results-title-main,.strategy-text{color:#111!important}
+      .sreason,.ext-item,.p-desc{color:#555!important}
+      .strategy-box{border:1px solid #c9a843;background:#fffbf0}
+      .p-badge,.chip{-webkit-print-color-adjust:exact;print-color-adjust:exact}
     }
   </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef } = React;
 
 const SYSTEM = `2022 개정 교육과정 고교학점제 과목추천 AI. 순수 JSON만 반환. 마크다운 없이.
 
@@ -179,21 +290,18 @@ const SYSTEM = `2022 개정 교육과정 고교학점제 과목추천 AI. 순수
       "name": "과목명",
       "category": "일반선택|진로선택|융합선택",
       "priority": "필수|추천|선택",
-      "reason": "이유 2문장 (진로·전공·대학 연계)",
-      "extracurricular": ["핵심 세특 탐구 주제 1", "핵심 세특 탐구 주제 2"]
+      "reason": "이유 2문장 (진로·전공·대학 직접 연계)",
+      "extracurricular": ["핵심 세특 주제 1", "핵심 세특 주제 2"]
     }
   ]
 }
 
-규칙:
-- priority: 필수(전공 직결, 대학 권장) / 추천(강력 도움) / 선택(보완)
-- 총 7~9개: 필수 2~3개, 추천 3~4개, 선택 1~2개
-- 카테고리 고루 분포
-- 반드시 아래 2022 개정 교육과정 과목명만 사용
-- 희망 대학 있으면 해당 권장 과목 우선 반영
-- 고1: 고2~3 전체 로드맵, 고2: 고3 집중
+priority 기준: 필수=전공 직결·대학 권장 / 추천=진로 강력 도움 / 선택=보완·심화
+총 7~9개: 필수 2~3, 추천 3~4, 선택 1~2. 카테고리 고루.
+반드시 아래 과목명만 사용.
+고1→고2~3 로드맵. 고2→고3 집중.
 
-과목목록:
+과목:
 국어일반:화법과 언어,독서와 작문,문학|국어진로:주제 탐구 독서,문학과 영상,직무 의사소통|국어융합:독서 토론과 글쓰기,매체 의사소통,언어생활 탐구
 수학일반:대수,미적분Ⅰ,확률과 통계|수학진로:미적분Ⅱ,기하,경제 수학,인공지능 수학,직업 수학|수학융합:수학과 문화,실용 통계,수학과제 탐구
 영어일반:영어Ⅰ,영어Ⅱ,영어 독해와 작문|영어진로:심화 영어,영미 문학 읽기,영어 발표와 토론,직무 영어|영어융합:실생활 영어 회화,미디어 영어,세계 문화와 영어
@@ -214,102 +322,300 @@ function catClass(c){
 }
 
 const PRIORITY_META = {
-  필수: { desc:'전공 필수 · 대학 권장', color:'#DC2626' },
-  추천: { desc:'진로 강력 연계', color:'#c9a843' },
-  선택: { desc:'보완 · 심화', color:'rgba(255,255,255,0.5)' },
+  필수:{desc:'전공 필수 · 대학 권장'},
+  추천:{desc:'진로 강력 연계'},
+  선택:{desc:'보완 · 심화'},
 };
 
-function HJModal({onClose}){
+// URL에 결과 인코딩/디코딩
+function encodeResults(data){
+  try{return btoa(encodeURIComponent(JSON.stringify(data)));}catch{return null;}
+}
+function decodeResults(str){
+  try{return JSON.parse(decodeURIComponent(atob(str)));}catch{return null;}
+}
+function getShareUrl(data){
+  const encoded = encodeResults(data);
+  if(!encoded) return null;
+  return `${location.origin}${location.pathname}#r=${encoded}`;
+}
+
+function NavBar({onStart, scrolled}){
   return(
-    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="modal">
-        <div className="modal-header">
-          <div className="modal-title">고교학점제란?</div>
-          <button className="modal-close" onClick={onClose}>✕</button>
-        </div>
-        <div className="modal-body">
-          <p className="hj-intro">학생이 진로에 따라 다양한 과목을 선택·이수하고, 누적 학점이 기준에 도달하면 졸업을 인정받는 제도입니다. 2025년부터 전국 고등학교에 전면 시행되었습니다.</p>
-          <div className="hj-cards">
-            <div className="hj-card"><div className="hj-card-title">📚 과목 선택권 확대</div><div className="hj-card-text">진로에 맞는 다양한 과목을 직접 선택하여 이수할 수 있습니다.</div></div>
-            <div className="hj-card"><div className="hj-card-title">🎓 학점 기반 졸업</div><div className="hj-card-text">192학점 이상 이수 시 졸업 인정. 단순 출석이 아닌 학습 성취가 중요합니다.</div></div>
-            <div className="hj-card"><div className="hj-card-title">🏫 선택과목 3유형</div><div className="hj-card-text">일반선택(기본 심화) · 진로선택(전공 연계) · 융합선택(창의·융합)</div></div>
-            <div className="hj-card"><div className="hj-card-title">🎯 입시와의 연계</div><div className="hj-card-text">대학별 전공 관련 권장 과목이 있으므로, 진로에 맞는 과목 선택이 입시에 직결됩니다.</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <nav className={`nav${scrolled?' scrolled':''}`}>
+      <div className="nav-logo" onClick={onStart}>과목<span>나침반</span></div>
+      <button className="nav-btn" onClick={onStart}>시작하기</button>
+    </nav>
   );
 }
 
-function SubjModal({onClose}){
-  const groups=[
-    {title:'국어',items:[{type:'일반선택',list:'화법과 언어 · 독서와 작문 · 문학'},{type:'진로선택',list:'주제 탐구 독서 · 문학과 영상 · 직무 의사소통'},{type:'융합선택',list:'독서 토론과 글쓰기 · 매체 의사소통 · 언어생활 탐구'}]},
-    {title:'수학',items:[{type:'일반선택',list:'대수 · 미적분Ⅰ · 확률과 통계'},{type:'진로선택',list:'미적분Ⅱ · 기하 · 경제 수학 · 인공지능 수학'},{type:'융합선택',list:'수학과 문화 · 실용 통계 · 수학과제 탐구'}]},
-    {title:'영어',items:[{type:'일반선택',list:'영어Ⅰ · 영어Ⅱ · 영어 독해와 작문'},{type:'진로선택',list:'심화 영어 · 영미 문학 읽기 · 영어 발표와 토론 · 직무 영어'},{type:'융합선택',list:'실생활 영어 회화 · 미디어 영어 · 세계 문화와 영어'}]},
-    {title:'사회',items:[{type:'일반선택',list:'세계시민과 지리 · 세계사 · 사회와 문화 · 현대사회와 윤리'},{type:'진로선택',list:'한국지리 탐구 · 정치 · 경제 · 법과 사회 · 윤리와 사상 · 인문학과 윤리 · 국제 관계의 이해'},{type:'융합선택',list:'사회문제 탐구 · 금융과 경제생활 · 여행지리 · 윤리문제 탐구'}]},
-    {title:'과학',items:[{type:'일반선택',list:'물리학 · 화학 · 생명과학 · 지구과학'},{type:'진로선택',list:'역학과 에너지 · 전자기와 빛 · 화학 반응의 세계 · 세포와 물질대사 · 생물의 유전 · 행성우주과학'},{type:'융합선택',list:'과학의 역사와 문화 · 기후 변화와 환경생태 · 융합과학 탐구'}]},
-    {title:'정보·기술·가정',items:[{type:'일반선택',list:'정보 · 기술·가정'},{type:'진로선택',list:'인공지능 기초 · 데이터 과학 · 로봇과 공학세계 · 창의 공학 설계 · 아동발달과 부모 · 생애 설계와 자립'},{type:'융합선택',list:'정보 통신과 미래 사회 · 가정과학 · 미래 기술과 사회'}]},
-    {title:'예술·체육',items:[{type:'일반선택',list:'음악 · 미술 · 연극 · 체육1 · 체육2'},{type:'진로선택',list:'음악 연주와 창작 · 미술 창작 · 음악 감상과 비평 · 미술 감상과 비평 · 스포츠 생활1·2'},{type:'융합선택',list:'음악과 미디어 · 미술과 매체 · 스포츠 과학'}]},
-    {title:'교양',items:[{type:'진로선택',list:'진로와 직업 · 인간과 철학 · 인간과 심리 · 교육의 이해 · 보건 · 생태와 환경'},{type:'융합선택',list:'인간과 경제활동 · 논술'}]},
-  ];
-  return(
-    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="modal">
-        <div className="modal-header">
-          <div className="modal-title">2022 개정 선택과목 안내</div>
-          <button className="modal-close" onClick={onClose}>✕</button>
-        </div>
-        <div className="modal-body">
-          <div className="subj-grid">
-            {groups.map((g,i)=>(
-              <div key={i} className="subj-group">
-                <div className="subj-group-title">{g.title}</div>
-                {g.items.map((item,j)=>(
-                  <div key={j} className="subj-row">
-                    <div className="subj-type">{item.type}</div>
-                    <div className="subj-items">{item.list}</div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function LoadingView(){
-  const [step,setStep]=useState(0);
+function LandingPage({onStart, onModal}){
+  const [scrolled, setScrolled] = useState(false);
   useEffect(()=>{
-    const t=setInterval(()=>setStep(s=>s<LOADING_STEPS.length-1?s+1:s),2400);
-    return()=>clearInterval(t);
+    const h=()=>setScrolled(window.scrollY>40);
+    window.addEventListener('scroll',h);
+    return()=>window.removeEventListener('scroll',h);
   },[]);
   return(
-    <div className="loading-wrap">
+    <>
+      <NavBar onStart={onStart} scrolled={scrolled}/>
+      {/* HERO */}
+      <section className="hero">
+        <div className="hero-eyebrow"><span className="hero-dot"/>선택과목 AI 설계 서비스</div>
+        <h1 className="hero-title">과목<span>나침반</span></h1>
+        <p className="hero-sub">진로가 정해지면, 과목은 AI가 설계합니다.<br/>2022 개정 교육과정 기준 맞춤 선택과목 추천</p>
+        <button className="hero-cta" onClick={onStart}>시작하기</button>
+        <div className="hero-stats">
+          <div className="hero-stat"><div className="hero-stat-num">2022</div><div className="hero-stat-label">개정 교육과정</div></div>
+          <div className="hero-stat"><div className="hero-stat-num">AI</div><div className="hero-stat-label">맞춤 분석</div></div>
+          <div className="hero-stat"><div className="hero-stat-num">세특</div><div className="hero-stat-label">탐구 주제 연계</div></div>
+          <div className="hero-stat"><div className="hero-stat-num">링크</div><div className="hero-stat-label">결과 공유</div></div>
+        </div>
+        <div className="hero-scroll"><span>SCROLL</span><div className="hero-scroll-line"/></div>
+      </section>
+
+      {/* WHY */}
+      <section className="why-section">
+        <div className="section-inner">
+          <div className="section-label">왜 과목나침반인가요</div>
+          <h2 className="section-title">과목 선택이<br/>입시를 결정합니다</h2>
+          <p className="section-sub">대학은 전공 관련 과목을 이수했는지 봅니다. 어떤 과목을 듣느냐에 따라 세특 내용이 달라지고, 합격 가능성이 달라집니다.</p>
+          <div className="why-cards">
+            <div className="why-card">
+              <div className="why-card-num">01</div>
+              <div className="why-card-title">필수 / 추천 / 선택</div>
+              <div className="why-card-sub">Priority Mapping</div>
+              <div className="why-card-divider"/>
+              <div className="why-card-text">모든 과목을 동등하게 나열하지 않습니다. 전공 직결 필수과목, 진로 연계 추천과목, 보완용 선택과목으로 명확히 구분해 드립니다.</div>
+            </div>
+            <div className="why-card">
+              <div className="why-card-num">02</div>
+              <div className="why-card-title">세특 탐구 주제</div>
+              <div className="why-card-sub">Seok-teu Topics</div>
+              <div className="why-card-divider"/>
+              <div className="why-card-text">과목 추천에 그치지 않습니다. 각 과목에서 실제로 탐구할 수 있는 세특 주제를 함께 제안해, 생기부 설계까지 연결됩니다.</div>
+            </div>
+            <div className="why-card">
+              <div className="why-card-num">03</div>
+              <div className="why-card-title">결과 링크 공유</div>
+              <div className="why-card-sub">Shareable Results</div>
+              <div className="why-card-divider"/>
+              <div className="why-card-text">결과를 링크로 저장해 학생·학부모에게 바로 공유할 수 있습니다. 카카오톡으로 전달하면 상담 신뢰도가 올라갑니다.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* HOW */}
+      <section className="how-section">
+        <div className="section-inner">
+          <div className="section-label">어떻게 사용하나요</div>
+          <h2 className="section-title">3단계로 끝납니다</h2>
+
+          <div className="how-step">
+            <div>
+              <div className="step-num-wrap"><div className="step-num">1</div><span className="step-label">STEP 01</span></div>
+              <div className="step-title">진로·전공만<br/>입력하면 끝</div>
+              <p className="step-desc">학년, 희망 진로, 희망 전공을 입력하세요. 목표 대학이 있다면 추가하면 해당 대학 권장 과목까지 반영됩니다.</p>
+              <ul className="step-points">
+                <li className="step-point"><div className="step-check">✓</div><span>고1 / 고2 선택 — 학년에 맞는 로드맵 제공</span></li>
+                <li className="step-point"><div className="step-check">✓</div><span>목표 대학 입력 시 해당 대학 권장과목 우선 반영</span></li>
+                <li className="step-point"><div className="step-check">✓</div><span>진로·전공·대학을 종합해 AI가 분석</span></li>
+              </ul>
+              <div className="step-tip"><strong>TIP</strong> 진로가 2~3개라면 나눠서 각각 돌려보세요. 과목이 겹치는 걸 보면 핵심 진로가 보입니다.</div>
+            </div>
+            <div className="mockup">
+              <div className="mockup-bar"><div className="mockup-dot" style={{background:'#ff5f56'}}/><div className="mockup-dot" style={{background:'#ffbd2e'}}/><div className="mockup-dot" style={{background:'#27c93f'}}/></div>
+              <div className="mockup-eyebrow">2022 개정 교육과정 · 고교학점제</div>
+              <div className="mockup-title">과목나침반</div>
+              <div className="mockup-sub">진로가 정해지면, 과목은 AI가 설계합니다</div>
+              <div className="mockup-card">
+                <div className="mockup-label">희망 진로</div>
+                <input className="mockup-input" value="의사" readOnly/>
+                <div className="mockup-label">희망 전공</div>
+                <input className="mockup-input" value="의학과" readOnly/>
+                <div className="mockup-label">희망 대학 (선택)</div>
+                <input className="mockup-input" value="서울대, 연세대" readOnly style={{marginBottom:14}}/>
+                <div className="mockup-btn">추천받기 →</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="how-step reverse">
+            <div>
+              <div className="step-num-wrap"><div className="step-num">2</div><span className="step-label">STEP 02</span></div>
+              <div className="step-title">필수·추천·선택<br/>과목이 한눈에</div>
+              <p className="step-desc">AI가 진로와 전공을 분석해 과목을 필수 / 추천 / 선택으로 구분합니다. 어디에 집중해야 할지 한눈에 파악됩니다.</p>
+              <ul className="step-points">
+                <li className="step-point"><div className="step-check">✓</div><span>필수: 전공 직결 · 대학 권장 과목 (최우선)</span></li>
+                <li className="step-point"><div className="step-check">✓</div><span>추천: 진로 강력 연계 과목</span></li>
+                <li className="step-point"><div className="step-check">✓</div><span>선택: 보완·심화 과목</span></li>
+              </ul>
+              <div className="step-tip"><strong>TIP</strong> 각 과목마다 실제 탐구 가능한 세특 주제가 함께 나옵니다. 이 주제를 수업 중 탐구로 연결하면 생기부 내용이 풍부해집니다.</div>
+            </div>
+            <div className="mockup">
+              <div className="mockup-bar"><div className="mockup-dot" style={{background:'#ff5f56'}}/><div className="mockup-dot" style={{background:'#ffbd2e'}}/><div className="mockup-dot" style={{background:'#27c93f'}}/></div>
+              <div className="mockup-result">
+                <div className="mockup-result-header"><span className="mockup-result-tag">맞춤 과목 추천 결과</span><span style={{fontSize:11,color:'rgba(242,234,216,.4)'}}>고1 · 의사 · 의학과</span></div>
+                <div className="mockup-result-body">
+                  {[{n:'화학',c:'일반선택',p:'필수'},{n:'생명과학',c:'일반선택',p:'필수'},{n:'세포와 물질대사',c:'진로선택',p:'추천'},{n:'화학 반응의 세계',c:'진로선택',p:'추천'},{n:'미적분Ⅱ',c:'진로선택',p:'추천'},{n:'과학의 역사와 문화',c:'융합선택',p:'선택'}].map((s,i)=>(
+                    <div key={i} className="mockup-scard">
+                      <div className="mockup-scard-left"><div className="mockup-scard-name">{s.n}</div><div className="mockup-scard-cat">{s.c}</div></div>
+                      <span className={`mockup-badge mb-${s.p}`}>{s.p}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="how-step">
+            <div>
+              <div className="step-num-wrap"><div className="step-num">3</div><span className="step-label">STEP 03</span></div>
+              <div className="step-title">링크 복사 —<br/>학생에게 바로 전달</div>
+              <p className="step-desc">결과 링크를 복사해 카카오톡으로 학생·학부모에게 바로 전송하세요. 링크를 열면 동일한 결과를 확인할 수 있습니다.</p>
+              <ul className="step-points">
+                <li className="step-point"><div className="step-check">✓</div><span>링크 한 번에 복사 — 별도 저장 불필요</span></li>
+                <li className="step-point"><div className="step-check">✓</div><span>PDF 저장으로 인쇄 배포 가능</span></li>
+                <li className="step-point"><div className="step-check">✓</div><span>학부모 동시 전달로 상담 신뢰도 향상</span></li>
+              </ul>
+              <div className="step-tip"><strong>TIP</strong> PDF로 저장 후 상담 자료로 활용하거나, 링크를 밴드·카카오톡 단체방에 공유하면 학부모 반응도 높아집니다.</div>
+            </div>
+            <div className="mockup">
+              <div className="mockup-bar"><div className="mockup-dot" style={{background:'#ff5f56'}}/><div className="mockup-dot" style={{background:'#ffbd2e'}}/><div className="mockup-dot" style={{background:'#27c93f'}}/></div>
+              <div style={{marginBottom:12}}>
+                <div className="mockup-label" style={{marginBottom:8}}>결과 공유 링크</div>
+                <div className="mockup-link">
+                  <div className="mockup-link-label">🔗 공유 링크</div>
+                  <div className="mockup-link-row">
+                    <div className="mockup-link-url">piltop-subject-recommender.vercel.app/#r=...</div>
+                    <button className="mockup-copy-btn">복사</button>
+                  </div>
+                </div>
+              </div>
+              <div className="mockup-result">
+                <div className="mockup-result-header"><span className="mockup-result-tag">과목 선택 전략</span></div>
+                <div style={{padding:'12px 14px',fontSize:12,color:'rgba(242,234,216,.6)',lineHeight:1.7}}>의학과 진학을 위해 화학과 생명과학을 필수로 이수하고, 진로선택 과목으로 세포와 물질대사, 화학 반응의 세계를 통해 전공 역량을 구체화하세요.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="cta-section">
+        <div style={{maxWidth:600,margin:'0 auto'}}>
+          <div className="section-label" style={{textAlign:'center',color:'rgba(242,234,216,.45)'}}>지금 바로 시작하세요</div>
+          <h2 className="cta-title">진로가 정해지면<br/><span>과목은 AI가 설계합니다</span></h2>
+          <p className="cta-sub">학년·진로·전공 입력만으로<br/>맞춤 선택과목과 세특 탐구 주제까지 한번에</p>
+          <button className="cta-btn" onClick={onStart}>시작하기 →</button>
+        </div>
+      </section>
+
+      <footer className="footer">
+        <div className="footer-logo">과목<span>나침반</span></div>
+        <div className="footer-copy">2022 개정 교육과정 기준 · 권장과목은 대학별로 매년 변경됩니다 · 필탑학원</div>
+      </footer>
+    </>
+  );
+}
+
+function FormPage({onBack, onResult}){
+  const [form, setForm] = useState({grade:'1',career:'',major:'',university:''});
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [lstep, setLstep] = useState(0);
+  const set = k => e => setForm(p=>({...p,[k]:e.target.value}));
+  const valid = form.career.trim()&&form.major.trim();
+
+  const submit = async()=>{
+    setLoading(true); setError(null); setLstep(0);
+    const timer = setInterval(()=>setLstep(s=>s<LOADING_STEPS.length-1?s+1:s),2400);
+    const msg=`고${form.grade}학년, 희망진로: ${form.career}, 희망전공: ${form.major}${form.university?`, 희망대학: ${form.university}`:''}`;
+    try{
+      const res=await fetch('/api/proxy',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1500,system:SYSTEM,messages:[{role:'user',content:msg}]})
+      });
+      const data=await res.json();
+      if(!res.ok) throw new Error(data?.error?.message||data?.error||`오류 ${res.status}`);
+      const raw=data.content[0].text.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+      const parsed=JSON.parse(raw);
+      clearInterval(timer);
+      onResult({results:parsed, form});
+    }catch(e){
+      clearInterval(timer);
+      setError(`오류: ${String(e.message)}`);
+      setLoading(false);
+    }
+  };
+
+  if(loading) return(
+    <div className="loading-page">
       <div className="spinner"/>
-      <p className="loading-text">{LOADING_STEPS[step]}...</p>
+      <p className="loading-text">{LOADING_STEPS[lstep]}...</p>
       <div className="loading-steps">
         {LOADING_STEPS.map((s,i)=>(
-          <div key={i} className={`loading-step ${i<step?'done':i===step?'active':''}`}>
-            <span className="step-dot"/><span>{s}</span>
+          <div key={i} className={`l-step ${i<lstep?'done':i===lstep?'active':''}`}>
+            <span className="l-dot"/><span>{s}</span>
           </div>
         ))}
+      </div>
+    </div>
+  );
+
+  return(
+    <div className="form-page">
+      <div className="form-page-header">
+        <div className="form-page-logo" onClick={onBack}>과목<span>나침반</span></div>
+        <button className="form-page-back" onClick={onBack}>← 돌아가기</button>
+      </div>
+      <div className="form-hero">
+        <div className="form-eyebrow">2022 개정 교육과정 · 고교학점제</div>
+        <h1 className="form-title">진로가 정해지면<br/><span>과목은 AI가 설계합니다</span></h1>
+        <p className="form-tagline">학년·진로·전공을 입력하면 맞춤 선택과목과 세특 탐구 주제까지 한번에</p>
+      </div>
+      <div className="form-body">
+        <div className="form-card">
+          <div className="form-row">
+            <div className="f-group">
+              <label className="f-label">학년<span className="req">*</span></label>
+              <select className="f-control" value={form.grade} onChange={set('grade')}>
+                <option value="1">고1</option>
+                <option value="2">고2</option>
+              </select>
+            </div>
+            <div className="f-group">
+              <label className="f-label">희망 진로<span className="req">*</span></label>
+              <input className="f-control" placeholder="예: 의사, 소프트웨어 엔지니어…" value={form.career} onChange={set('career')}/>
+            </div>
+            <div className="f-group">
+              <label className="f-label">희망 전공<span className="req">*</span></label>
+              <input className="f-control" placeholder="예: 의학과, 컴퓨터공학과…" value={form.major} onChange={set('major')}/>
+            </div>
+          </div>
+          <div className="f-full">
+            <label className="f-label">희망 대학 <span style={{fontWeight:400,textTransform:'none',letterSpacing:0,color:'rgba(242,234,216,.28)'}}>선택 — 해당 대학 권장 과목 반영</span></label>
+            <input className="f-control" placeholder="예: 서울대, 연세대, 성균관대…" value={form.university} onChange={set('university')}/>
+          </div>
+          <button className="f-submit" onClick={submit} disabled={!valid}>추천받기 →</button>
+          {error&&<div className="f-error">{error}</div>}
+        </div>
       </div>
     </div>
   );
 }
 
 function PrioritySection({priority, subjects}){
-  const meta = PRIORITY_META[priority];
-  const list = subjects.filter(s=>s.priority===priority);
+  const meta=PRIORITY_META[priority];
+  const list=subjects.filter(s=>s.priority===priority);
   if(!list.length) return null;
   return(
     <div className="priority-section">
       <div className="priority-header">
-        <span className={`priority-badge pb-${priority}`}>{priority}</span>
-        <span className="priority-desc">{meta.desc}</span>
-        <span className="priority-count">{list.length}과목</span>
+        <span className={`p-badge pb-${priority}`}>{priority}</span>
+        <span className="p-desc">{meta.desc}</span>
+        <span className="p-count">{list.length}과목</span>
       </div>
       <div className={`scards-${priority}`}>
         {list.map((s,i)=>(
@@ -332,119 +638,104 @@ function PrioritySection({priority, subjects}){
   );
 }
 
-function App(){
-  const [view,setView]=useState('form');
-  const [form,setForm]=useState({grade:'1',career:'',major:'',university:''});
-  const [results,setResults]=useState(null);
-  const [error,setError]=useState(null);
-  const [modal,setModal]=useState(null);
+function ResultsPage({results, form, onBack, onNew}){
+  const [toast, setToast] = useState(false);
+  const [modal, setModal] = useState(null);
+  const shareUrl = getShareUrl({results, form});
 
-  const set=k=>e=>setForm(p=>({...p,[k]:e.target.value}));
-  const valid=form.career.trim()&&form.major.trim();
-
-  const submit=async()=>{
-    setView('loading');setError(null);
-    const msg=`고${form.grade}학년, 희망진로: ${form.career}, 희망전공: ${form.major}${form.university?`, 희망대학: ${form.university}`:''}`;
-    try{
-      const res=await fetch('/api/proxy',{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1500,system:SYSTEM,messages:[{role:'user',content:msg}]})
-      });
-      const data=await res.json();
-      if(!res.ok) throw new Error(data?.error?.message||data?.error||`오류 ${res.status}`);
-      const raw=data.content[0].text.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
-      setResults(JSON.parse(raw));setView('results');
-    }catch(e){
-      setError(`오류: ${String(e.message)}`);setView('form');
-    }
+  const copyLink=()=>{
+    if(!shareUrl) return;
+    navigator.clipboard.writeText(shareUrl).then(()=>{
+      setToast(true);
+      setTimeout(()=>setToast(false),2200);
+    });
   };
 
   return(
-    <>
-      <header className="header">
-        <div className="logo-name">과목<span>나침반</span></div>
-        <nav className="header-nav">
-          <a onClick={()=>setModal('hj')}>고교학점제란?</a>
-          <a onClick={()=>setModal('subj')}>과목 안내</a>
-        </nav>
-      </header>
-
-      {view==='form'&&(
-        <main className="hero">
-          <div className="hero-eyebrow">2022 개정 교육과정 · 고교학점제</div>
-          <h1 className="hero-title">진로가 정해지면<br/><span>과목은 AI가 설계합니다</span></h1>
-          <p className="hero-tagline">학년·진로·전공을 입력하면<br/>맞춤 선택과목과 세특 탐구 주제까지 한번에</p>
-          <div className="hero-stats">
-            <div className="hero-stat"><div className="hero-stat-num">2022</div><div className="hero-stat-label">개정 교육과정</div></div>
-            <div className="hero-stat"><div className="hero-stat-num">AI</div><div className="hero-stat-label">맞춤 분석</div></div>
-            <div className="hero-stat"><div className="hero-stat-num">세특</div><div className="hero-stat-label">탐구 주제 연계</div></div>
+    <div className="results-page">
+      <div className="form-page-header">
+        <div className="form-page-logo" onClick={onNew}>과목<span>나침반</span></div>
+        <div style={{display:'flex',gap:8}}>
+          <button className="form-page-back" onClick={onNew}>← 처음으로</button>
+        </div>
+      </div>
+      <div className="results-body">
+        <div className="results-inner">
+          <div className="results-top">
+            <div>
+              <h2 className="results-title-main">맞춤 과목 추천 결과</h2>
+              <div className="chips">
+                <span className="chip">고{form.grade}</span>
+                <span className="chip">{form.career}</span>
+                <span className="chip">{form.major}</span>
+                {form.university&&<span className="chip">{form.university}</span>}
+              </div>
+            </div>
+            <div className="r-btns">
+              <button className="r-btn-link" onClick={copyLink}>🔗 링크 복사</button>
+              <button className="r-btn-pdf" onClick={()=>window.print()}>📄 PDF 저장</button>
+              <button className="r-btn-back" onClick={onBack}>↩ 다시 입력</button>
+            </div>
           </div>
-          <div className="form-card">
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">학년<span className="required">*</span></label>
-                <select className="form-control" value={form.grade} onChange={set('grade')}>
-                  <option value="1">고1</option>
-                  <option value="2">고2</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label">희망 진로<span className="required">*</span></label>
-                <input className="form-control" placeholder="예: 의사, 소프트웨어 엔지니어…" value={form.career} onChange={set('career')}/>
-              </div>
-              <div className="form-group">
-                <label className="form-label">희망 전공<span className="required">*</span></label>
-                <input className="form-control" placeholder="예: 의학과, 컴퓨터공학과…" value={form.major} onChange={set('major')}/>
-              </div>
+
+          {shareUrl&&(
+            <div className="link-box">
+              <span className="link-box-label">🔗 공유 링크</span>
+              <div className="link-box-url">{shareUrl}</div>
+              <button className="link-box-copy" onClick={copyLink}>복사</button>
             </div>
-            <div className="form-full">
-              <label className="form-label">희망 대학 <span style={{fontWeight:400,textTransform:'none',letterSpacing:0,color:'rgba(242,234,216,.28)'}}>선택 — 해당 대학 권장 과목 반영</span></label>
-              <input className="form-control" placeholder="예: 서울대, 연세대, 성균관대…" value={form.university} onChange={set('university')}/>
-            </div>
-            <button className="submit-btn" onClick={submit} disabled={!valid}>추천받기 →</button>
-            {error&&<div className="error-box">{error}</div>}
+          )}
+
+          <div className="strategy-box">
+            <div className="strategy-label">과목 선택 전략</div>
+            <p className="strategy-text">{results.overall_strategy}</p>
           </div>
-        </main>
-      )}
 
-      {view==='loading'&&<LoadingView/>}
+          {['필수','추천','선택'].map(p=>(
+            <PrioritySection key={p} priority={p} subjects={results.subjects||[]}/>
+          ))}
 
-      {view==='results'&&results&&(
-        <div className="results-wrap">
-          <div className="results-inner">
-            <div className="results-top">
-              <div>
-                <h2 className="results-title">맞춤 과목 추천 결과</h2>
-                <div className="chips">
-                  <span className="chip">고{form.grade}</span>
-                  <span className="chip">{form.career}</span>
-                  <span className="chip">{form.major}</span>
-                  {form.university&&<span className="chip">{form.university}</span>}
-                </div>
-              </div>
-              <div className="top-btns">
-                <button className="btn-pdf" onClick={()=>window.print()}>📄 PDF 저장</button>
-                <button className="btn-back" onClick={()=>{setView('form');setError(null);}}>← 다시 입력</button>
-              </div>
-            </div>
-            <div className="strategy">
-              <div className="strategy-label">과목 선택 전략</div>
-              <p className="strategy-text">{results.overall_strategy}</p>
-            </div>
-            {['필수','추천','선택'].map(p=>(
-              <PrioritySection key={p} priority={p} subjects={results.subjects||[]}/>
-            ))}
-            <div className="result-footer">
-              2022 개정 교육과정 기준 · 권장과목은 대학·학과별로 매년 변경됩니다 · 각 대학 입학처에서 최신 정보를 확인하세요 · 필탑학원
-            </div>
+          <div className="result-footer">
+            2022 개정 교육과정 기준 · 권장과목은 대학·학과별로 매년 변경됩니다 · 각 대학 입학처에서 최신 정보를 확인하세요 · 필탑학원
           </div>
         </div>
-      )}
-
-      {modal==='hj'&&<HJModal onClose={()=>setModal(null)}/>}
-      {modal==='subj'&&<SubjModal onClose={()=>setModal(null)}/>}
-    </>
+      </div>
+      {toast&&<div className="toast">✓ 링크가 복사되었습니다</div>}
+    </div>
   );
+}
+
+function App(){
+  const [page, setPage] = useState('landing'); // landing | form | results
+  const [resultData, setResultData] = useState(null);
+
+  // URL 해시에서 결과 복원
+  useEffect(()=>{
+    const hash = location.hash;
+    if(hash.startsWith('#r=')){
+      const decoded = decodeResults(hash.slice(3));
+      if(decoded&&decoded.results&&decoded.form){
+        setResultData(decoded);
+        setPage('results');
+      }
+    }
+  },[]);
+
+  const goStart=()=>{ setPage('form'); window.scrollTo(0,0); };
+  const goLanding=()=>{ setPage('landing'); window.scrollTo(0,0); history.pushState('','',location.pathname); };
+  const goResult=(data)=>{
+    setResultData(data);
+    setPage('results');
+    // URL 업데이트
+    const url = getShareUrl(data);
+    if(url) history.pushState('','',url);
+    window.scrollTo(0,0);
+  };
+
+  if(page==='landing') return <LandingPage onStart={goStart}/>;
+  if(page==='form') return <FormPage onBack={goLanding} onResult={goResult}/>;
+  if(page==='results'&&resultData) return <ResultsPage results={resultData.results} form={resultData.form} onBack={()=>setPage('form')} onNew={goLanding}/>;
+  return null;
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
