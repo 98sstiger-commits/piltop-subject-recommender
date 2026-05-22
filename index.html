@@ -3,118 +3,136 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>진로과목선택 - 고교학점제 맞춤 과목추천</title>
+  <title>선택과목 추천 - 고교학점제 맞춤 분석</title>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #0b1d12; --bg2: #112518; --bg3: #162e1e;
-      --gold: #c9a843; --gold2: #d4b95a;
-      --text: #f0ede4; --muted: #8aab95;
-      --border: rgba(255,255,255,0.09);
+      --green:  #1a3a28;
+      --green2: #122b1e;
+      --green3: #0e2218;
+      --cream:  #f2ead8;
+      --cream2: #e8dfc8;
+      --gold:   #c9a843;
+      --gold2:  #d4b95a;
+      --muted:  rgba(242,234,216,0.55);
+      --border: rgba(242,234,216,0.12);
     }
-    body { font-family: 'Segoe UI',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Apple SD Gothic Neo','Malgun Gothic',-apple-system,sans-serif; background:var(--green3); color:var(--cream); min-height:100vh; }
 
-    /* Header */
-    .header { background:#fff; padding:0 48px; height:64px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #e8e8e8; position:sticky; top:0; z-index:100; }
+    /* HEADER */
+    .header { background:var(--green); border-bottom:1px solid var(--border); padding:0 48px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
     .logo { display:flex; align-items:center; gap:10px; }
-    .logo-icon { width:34px; height:34px; background:var(--bg); border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--gold); font-weight:800; font-size:15px; }
-    .logo-name { font-size:18px; font-weight:700; color:#111; }
+    .logo-icon { width:34px; height:34px; background:var(--gold); border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--green3); font-weight:900; font-size:15px; }
+    .logo-name { font-size:17px; font-weight:700; color:var(--cream); }
     .header-nav { display:flex; gap:28px; }
-    .header-nav a { font-size:14px; color:#555; text-decoration:none; transition:color 0.2s; }
-    .header-nav a:hover { color:#111; }
+    .header-nav a { font-size:14px; color:var(--muted); text-decoration:none; transition:color 0.2s; cursor:pointer; }
+    .header-nav a:hover { color:var(--cream); }
 
-    /* Hero */
-    .hero { background:var(--bg); background-image:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201,168,67,0.08), transparent); padding:88px 24px 100px; text-align:center; }
-    .hero-title { font-size:clamp(42px,6vw,76px); font-weight:800; color:var(--text); line-height:1.1; margin-bottom:16px; }
-    .hero-sub { font-size:16px; color:var(--muted); margin-bottom:20px; }
-    .hero-stats { display:flex; gap:28px; justify-content:center; margin-bottom:48px; flex-wrap:wrap; }
-    .hero-stat { text-align:center; }
-    .hero-stat-num { font-size:28px; font-weight:800; color:var(--gold); line-height:1; }
+    /* HERO */
+    .hero { background:var(--green); padding:80px 24px 90px; text-align:center; border-bottom:1px solid var(--border); }
+    .hero-title { font-size:clamp(38px,5.5vw,68px); font-weight:800; color:var(--cream); line-height:1.1; margin-bottom:14px; letter-spacing:-1px; }
+    .hero-title span { color:var(--gold); }
+    .hero-sub { font-size:16px; color:var(--muted); margin-bottom:40px; line-height:1.7; }
+    .hero-stats { display:flex; gap:40px; justify-content:center; margin-bottom:52px; flex-wrap:wrap; }
+    .hero-stat-num { font-size:26px; font-weight:800; color:var(--gold); line-height:1; }
     .hero-stat-label { font-size:12px; color:var(--muted); margin-top:4px; }
 
-    /* Form */
-    .form-card { max-width:740px; margin:0 auto; background:var(--bg2); border:1px solid var(--border); border-radius:18px; padding:36px 32px 28px; }
-    .form-row { display:grid; grid-template-columns:140px 1fr 1fr; gap:14px; margin-bottom:14px; }
+    /* FORM CARD */
+    .form-card { max-width:720px; margin:0 auto; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:18px; padding:32px 28px 24px; backdrop-filter:blur(4px); }
+    .form-row { display:grid; grid-template-columns:130px 1fr 1fr; gap:12px; margin-bottom:12px; }
     .form-group { display:flex; flex-direction:column; }
-    .form-label { font-size:12px; font-weight:600; color:var(--muted); letter-spacing:0.04em; margin-bottom:7px; }
+    .form-label { font-size:11px; font-weight:700; color:var(--muted); letter-spacing:0.06em; margin-bottom:7px; text-transform:uppercase; }
     .required { color:var(--gold); margin-left:2px; }
-    .form-control { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.11); border-radius:9px; color:var(--text); padding:11px 14px; font-size:14px; outline:none; transition:border-color 0.2s,background 0.2s; font-family:inherit; width:100%; }
-    .form-control:focus { border-color:var(--gold); background:rgba(255,255,255,0.08); }
-    .form-control::placeholder { color:rgba(138,171,149,0.45); }
-    select.form-control option { background:#162e1e; }
-    .form-full { margin-bottom:22px; }
-    .submit-btn { width:100%; padding:15px; background:var(--gold); border:none; border-radius:10px; color:#0b1d12; font-size:16px; font-weight:700; cursor:pointer; font-family:inherit; transition:background 0.2s,transform 0.1s; }
+    .form-control { background:rgba(255,255,255,0.07); border:1px solid var(--border); border-radius:9px; color:var(--cream); padding:11px 14px; font-size:14px; outline:none; transition:border-color 0.2s,background 0.2s; font-family:inherit; width:100%; }
+    .form-control:focus { border-color:var(--gold); background:rgba(255,255,255,0.1); }
+    .form-control::placeholder { color:rgba(242,234,216,0.3); }
+    select.form-control option { background:#1a3a28; color:var(--cream); }
+    .form-full { margin-bottom:20px; }
+    .submit-btn { width:100%; padding:14px; background:var(--gold); border:none; border-radius:10px; color:var(--green3); font-size:16px; font-weight:800; cursor:pointer; font-family:inherit; transition:background 0.2s,transform 0.1s; letter-spacing:-0.3px; }
     .submit-btn:hover:not(:disabled) { background:var(--gold2); }
     .submit-btn:active:not(:disabled) { transform:scale(0.98); }
-    .submit-btn:disabled { opacity:0.45; cursor:not-allowed; }
-    .error-box { margin-top:14px; padding:12px 16px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:8px; color:#f87171; font-size:14px; }
+    .submit-btn:disabled { opacity:0.4; cursor:not-allowed; }
+    .error-box { margin-top:12px; padding:12px 16px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); border-radius:8px; color:#f87171; font-size:13px; }
 
-    /* Loading */
-    .loading-wrap { min-height:calc(100vh - 64px); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; background:var(--bg); }
-    .spinner { width:48px; height:48px; border:3px solid rgba(201,168,67,0.18); border-top-color:var(--gold); border-radius:50%; animation:spin 0.85s linear infinite; }
+    /* LOADING */
+    .loading-wrap { min-height:60vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
+    .spinner { width:44px; height:44px; border:3px solid rgba(201,168,67,0.2); border-top-color:var(--gold); border-radius:50%; animation:spin 0.85s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
-    .loading-msg { color:var(--muted); font-size:16px; }
-    .loading-msg::after { content:''; animation:dots 1.5s steps(4,end) infinite; }
-    @keyframes dots { 0%,20%{content:'';} 40%{content:'.';} 60%{content:'..';} 80%,100%{content:'...';} }
+    .loading-text { color:var(--muted); font-size:15px; }
 
-    /* Results */
-    .results-wrap { background:var(--bg); min-height:calc(100vh - 64px); padding:52px 24px 80px; }
+    /* RESULTS */
+    .results-wrap { padding:48px 24px 80px; }
     .results-inner { max-width:1100px; margin:0 auto; }
-    .results-top { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:32px; flex-wrap:wrap; }
-    .results-title { font-size:26px; font-weight:800; margin-bottom:10px; }
-    .chips { display:flex; gap:8px; flex-wrap:wrap; }
-    .chip { padding:5px 13px; background:rgba(201,168,67,0.13); border:1px solid rgba(201,168,67,0.28); color:var(--gold); border-radius:20px; font-size:13px; }
-    .top-actions { display:flex; gap:10px; flex-wrap:wrap; }
-    .back-btn { padding:9px 20px; background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--muted); font-size:14px; cursor:pointer; font-family:inherit; transition:all 0.2s; white-space:nowrap; }
-    .back-btn:hover { border-color:var(--gold); color:var(--gold); }
-    .pdf-btn { padding:9px 20px; background:var(--gold); border:none; border-radius:8px; color:#0b1d12; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; transition:all 0.2s; white-space:nowrap; }
-    .pdf-btn:hover { background:var(--gold2); }
+    .results-top { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:28px; flex-wrap:wrap; }
+    .results-title { font-size:24px; font-weight:800; color:var(--cream); margin-bottom:10px; }
+    .chips { display:flex; gap:7px; flex-wrap:wrap; }
+    .chip { padding:4px 12px; background:rgba(201,168,67,0.15); border:1px solid rgba(201,168,67,0.3); color:var(--gold); border-radius:20px; font-size:12px; font-weight:600; }
+    .top-btns { display:flex; gap:9px; }
+    .btn-pdf { padding:9px 18px; background:var(--gold); border:none; border-radius:8px; color:var(--green3); font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; transition:background 0.15s; white-space:nowrap; }
+    .btn-pdf:hover { background:var(--gold2); }
+    .btn-back { padding:9px 18px; background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--muted); font-size:13px; cursor:pointer; font-family:inherit; transition:all 0.15s; white-space:nowrap; }
+    .btn-back:hover { border-color:var(--gold); color:var(--gold); }
 
-    /* Strategy */
-    .strategy { background:linear-gradient(135deg,rgba(201,168,67,0.1),rgba(201,168,67,0.03)); border:1px solid rgba(201,168,67,0.22); border-radius:14px; padding:26px 30px; margin-bottom:32px; }
-    .strategy-label { font-size:11px; font-weight:700; color:var(--gold); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:10px; }
-    .strategy-text { font-size:15px; line-height:1.8; color:var(--text); }
+    /* STRATEGY */
+    .strategy { background:rgba(201,168,67,0.08); border:1px solid rgba(201,168,67,0.2); border-radius:14px; padding:24px 28px; margin-bottom:28px; }
+    .strategy-label { font-size:10px; font-weight:800; color:var(--gold); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:10px; }
+    .strategy-text { font-size:15px; line-height:1.85; color:var(--cream); }
 
-    /* Grid */
-    .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
-    .scard { background:var(--bg2); border:1px solid var(--border); border-radius:14px; padding:22px; transition:border-color 0.25s,transform 0.25s; }
-    .scard:hover { border-color:rgba(201,168,67,0.3); transform:translateY(-3px); }
-    .cat { display:inline-block; padding:3px 11px; border-radius:20px; font-size:11px; font-weight:700; margin-bottom:12px; letter-spacing:0.03em; }
-    .cat-g { background:rgba(91,156,246,0.14); color:#5b9cf6; border:1px solid rgba(91,156,246,0.28); }
-    .cat-c { background:rgba(201,168,67,0.14); color:#c9a843; border:1px solid rgba(201,168,67,0.28); }
-    .cat-f { background:rgba(86,196,122,0.14); color:#56c47a; border:1px solid rgba(86,196,122,0.28); }
-    .sname { font-size:22px; font-weight:800; margin-bottom:10px; }
-    .sreason { font-size:13px; line-height:1.7; color:var(--muted); padding-bottom:14px; margin-bottom:14px; border-bottom:1px solid var(--border); }
+    /* GRID */
+    .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+    .scard { background:var(--green); border:1px solid var(--border); border-radius:14px; padding:20px; transition:border-color 0.2s,transform 0.2s; }
+    .scard:hover { border-color:rgba(201,168,67,0.35); transform:translateY(-2px); }
+    .cat { display:inline-block; padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700; margin-bottom:10px; letter-spacing:0.04em; }
+    .cat-g { background:rgba(91,156,246,0.15); color:#7bb3f8; border:1px solid rgba(91,156,246,0.25); }
+    .cat-c { background:rgba(201,168,67,0.15); color:var(--gold); border:1px solid rgba(201,168,67,0.25); }
+    .cat-f { background:rgba(86,196,122,0.15); color:#6dcf8a; border:1px solid rgba(86,196,122,0.25); }
+    .sname { font-size:20px; font-weight:800; color:var(--cream); margin-bottom:8px; letter-spacing:-0.3px; }
+    .sreason { font-size:13px; line-height:1.75; color:var(--muted); padding-bottom:14px; margin-bottom:14px; border-bottom:1px solid var(--border); }
     .ext-label { font-size:10px; font-weight:700; color:var(--gold); letter-spacing:0.09em; text-transform:uppercase; margin-bottom:8px; }
     .ext-list { list-style:none; display:flex; flex-direction:column; gap:7px; }
-    .ext-item { display:flex; align-items:flex-start; gap:7px; font-size:12px; color:var(--muted); line-height:1.5; }
-    .ext-dot { width:4px; height:4px; background:var(--gold); border-radius:50%; margin-top:6px; flex-shrink:0; }
-    .result-footer { margin-top:32px; text-align:center; font-size:12px; color:var(--muted); line-height:1.7; }
+    .ext-item { display:flex; align-items:flex-start; gap:8px; font-size:12px; color:var(--muted); line-height:1.55; }
+    .ext-dot { width:4px; height:4px; background:var(--gold); border-radius:50%; margin-top:5px; flex-shrink:0; }
+    .result-footer { margin-top:32px; text-align:center; font-size:11px; color:rgba(242,234,216,0.35); line-height:1.7; }
 
-    /* Responsive */
-    @media (max-width:900px) { .grid { grid-template-columns:repeat(2,1fr); } }
+    /* GUIDE SECTION */
+    .guide-section { background:var(--green); border-top:1px solid var(--border); padding:64px 24px; }
+    .guide-inner { max-width:900px; margin:0 auto; }
+    .guide-title { font-size:22px; font-weight:800; color:var(--cream); margin-bottom:8px; }
+    .guide-sub { font-size:14px; color:var(--muted); margin-bottom:36px; }
+    .guide-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+    .guide-card { background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:12px; padding:20px; }
+    .guide-cat { font-size:11px; font-weight:700; color:var(--gold); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:10px; }
+    .guide-items { display:flex; flex-direction:column; gap:5px; }
+    .guide-item { font-size:12px; color:var(--muted); line-height:1.5; padding:4px 0; border-bottom:1px solid var(--border); }
+    .guide-item:last-child { border-bottom:none; }
+
+    /* RESPONSIVE */
+    @media (max-width:900px) { .grid { grid-template-columns:repeat(2,1fr); } .guide-grid { grid-template-columns:repeat(2,1fr); } }
     @media (max-width:640px) {
       .form-row { grid-template-columns:1fr 1fr; }
       .form-row > :first-child { grid-column:1/-1; }
       .grid { grid-template-columns:1fr; }
+      .guide-grid { grid-template-columns:1fr; }
       .header { padding:0 20px; }
-      .hero { padding:60px 16px 80px; }
-      .form-card { padding:24px 18px 20px; }
+      .hero { padding:56px 16px 72px; }
+      .form-card { padding:22px 16px 18px; }
     }
     @media (max-width:420px) { .form-row { grid-template-columns:1fr; } }
 
-    /* Print */
+    /* PRINT */
     @media print {
-      .header, .top-actions, .result-footer { display:none !important; }
+      .header,.top-btns,.result-footer,.guide-section { display:none !important; }
       body { background:#fff; color:#111; }
       .results-wrap { background:#fff; padding:20px 0; }
-      .scard { border:1px solid #ddd; break-inside:avoid; }
-      .sname, .strategy-text { color:#111; }
-      .sreason, .ext-item { color:#444; }
-      .strategy { border:1px solid #c9a843; }
+      .scard { border:1px solid #ddd; break-inside:avoid; background:#fff; }
+      .sname,.results-title,.strategy-text { color:#111 !important; }
+      .sreason,.ext-item { color:#444 !important; }
+      .strategy { border:1px solid #c9a843; background:#fffbf0; }
+      .chip { background:#f5f5f5; color:#555; border:1px solid #ddd; }
     }
   </style>
 </head>
@@ -123,7 +141,7 @@
   <script type="text/babel">
     const { useState } = React;
 
-    const SYSTEM = `당신은 2022 개정 교육과정(2025 고교학점제) 전문 과목추천 AI입니다.
+    const SYSTEM = `당신은 2022 개정 교육과정(고교학점제) 전문 과목추천 AI입니다.
 반드시 JSON만 응답하세요. 마크다운·코드블록·추가 설명 없이 순수 JSON만 출력하세요.
 
 응답 형식:
@@ -134,75 +152,74 @@
       "name": "과목명",
       "category": "일반선택",
       "reason": "이 과목을 선택해야 하는 이유 (2~3문장, 진로·전공·대학과 구체적으로 연계)",
-      "extracurricular": ["비교과 탐구 주제 1", "비교과 탐구 주제 2", "비교과 탐구 주제 3"]
+      "extracurricular": ["세특/비교과 탐구 주제 1", "세특/비교과 탐구 주제 2", "세특/비교과 탐구 주제 3"]
     }
   ]
 }
 
 규칙:
-- category 값은 "일반선택" "진로선택" "융합선택" 중 하나
-- 총 6~9개 과목 추천, 카테고리 고루 분포
-- 반드시 아래 2022 개정 교육과정 실제 과목명만 사용할 것 (구 교육과정 과목명 절대 사용 금지)
-- 희망 대학이 있으면 해당 대학 전공 관련 권장 과목 우선 반영
-- 비교과 주제는 학생이 실제 학교에서 수행할 수 있는 구체적 탐구·활동으로 작성
+- category는 "일반선택" "진로선택" "융합선택" 중 하나만
+- 총 6~9개 과목, 카테고리 고루 분포
+- 반드시 아래 2022 개정 교육과정 과목명만 사용 (구 교육과정 과목명 절대 금지)
+- 희망 대학이 있으면 해당 대학 권장 과목 우선 반영
+- 고1이면 고2~3 전체 로드맵, 고2이면 고3 집중 추천
 
-=== 2022 개정 교육과정 선택과목 전체 목록 ===
+=== 2022 개정 교육과정 선택과목 목록 ===
+[국어 일반선택] 화법과 언어, 독서와 작문, 문학
+[국어 진로선택] 주제 탐구 독서, 문학과 영상, 직무 의사소통
+[국어 융합선택] 독서 토론과 글쓰기, 매체 의사소통, 언어생활 탐구
 
-[수학 — 일반선택] 대수, 미적분Ⅰ, 확률과 통계
-[수학 — 진로선택] 기하, 미적분Ⅱ, 경제 수학, 인공지능 수학, 직업 수학
-[수학 — 융합선택] 수학과 문화, 실용 통계, 수학과제 탐구
+[수학 일반선택] 대수, 미적분Ⅰ, 확률과 통계
+[수학 진로선택] 미적분Ⅱ, 기하, 경제 수학, 인공지능 수학, 직업 수학
+[수학 융합선택] 수학과 문화, 실용 통계, 수학과제 탐구
 
-[과학 — 일반선택] 물리학, 화학, 생명과학, 지구과학
-[과학 — 진로선택] 역학과 에너지, 전자기와 양자, 물질과 에너지, 화학 반응의 세계, 세포와 물질대사, 생물의 유전, 지구시스템과학, 행성우주과학
-[과학 — 융합선택] 과학의 역사와 문화, 기후변화와 환경생태, 융합과학 탐구
+[영어 일반선택] 영어Ⅰ, 영어Ⅱ, 영어 독해와 작문
+[영어 진로선택] 영미 문학 읽기, 영어 발표와 토론, 심화 영어, 직무 영어
+[영어 융합선택] 실생활 영어 회화, 미디어 영어, 세계 문화와 영어
 
-[국어 — 일반선택] 화법과 언어, 독서와 작문, 문학
-[국어 — 진로선택] 주제 탐구 독서, 문학과 영상, 직무 의사소통
-[국어 — 융합선택] 독서 토론과 글쓰기, 매체 의사소통, 언어생활 탐구
+[사회 일반선택] 세계시민과 지리, 세계사, 사회와 문화, 현대사회와 윤리
+[사회 진로선택] 한국지리 탐구, 도시의 미래 탐구, 동아시아사 주제 탐구, 정치, 경제, 법과 사회, 윤리와 사상, 인문학과 윤리, 국제 관계의 이해
+[사회 융합선택] 여행지리, 역사로 탐구하는 현대 세계, 사회문제 탐구, 금융과 경제생활, 윤리문제 탐구, 기후 변화와 지속가능한 세계
 
-[영어 — 일반선택] 영어Ⅰ, 영어Ⅱ, 영어 독해와 작문
-[영어 — 진로선택] 영어 발표와 토론, 심화 영어, 영미 문학 읽기, 직무 영어
-[영어 — 융합선택] 실생활 영어 회화, 미디어 영어, 세계 문화와 영어
+[과학 일반선택] 물리학, 화학, 생명과학, 지구과학
+[과학 진로선택] 역학과 에너지, 전자기와 빛, 물질과 에너지, 화학 반응의 세계, 세포와 물질대사, 생물의 유전, 지구시스템과학, 행성우주과학
+[과학 융합선택] 과학의 역사와 문화, 기후 변화와 환경생태, 융합과학 탐구
 
-[사회 — 일반선택] 한국지리 탐구, 세계지리 탐구, 세계사, 사회와 문화, 현대사회와 윤리
-[사회 — 진로선택] 도시의 미래 탐구, 동아시아 역사 기행, 정치, 법과 사회, 경제, 윤리와 사상, 인문학과 윤리, 국제 관계의 이해
-[사회 — 융합선택] 여행지리, 역사로 탐구하는 현대 세계, 사회문제 탐구, 금융과 경제생활, 윤리문제 탐구, 기후변화와 지속가능한 세계
+[정보 일반선택] 정보
+[정보 진로선택] 인공지능 기초, 데이터 과학, 소프트웨어와 생활
+[정보 융합선택] 정보 통신과 미래 사회
 
-[정보·기술 — 일반선택] 정보
-[정보·기술 — 진로선택] 인공지능 기초, 데이터 과학, 소프트웨어와 생활
-[정보·기술 — 융합선택] 정보 통신과 미래 사회
+[기술가정 일반선택] 기술·가정
+[기술가정 진로선택] 로봇과 공학세계, 공학 일반, 창의 공학 설계, 지식 재산 일반, 발명과 기업가 정신, 인공지능과 미래 생활, 아동발달과 부모, 생애 설계와 자립
+[기술가정 융합선택] 가정과학, 지식 재산과 경영, 미래 기술과 사회
 
-[예술 — 일반선택] 음악, 미술, 연극
-[예술 — 진로선택] 음악 연주와 창작, 음악 감상과 비평, 미술 창작, 미술 감상과 비평
-[예술 — 융합선택] 음악과 미디어, 미술과 매체
+[예술 일반선택] 음악, 미술, 연극
+[예술 진로선택] 음악 연주와 창작, 음악 감상과 비평, 미술 창작, 미술 감상과 비평
+[예술 융합선택] 음악과 미디어, 미술과 매체
 
-[체육 — 일반선택] 체육1, 체육2
-[체육 — 진로선택] 운동과 건강, 스포츠 생활1, 스포츠 생활2
-[체육 — 융합선택] 스포츠 문화, 스포츠 과학
+[체육 일반선택] 체육1, 체육2
+[체육 진로선택] 운동과 건강, 스포츠 생활1, 스포츠 생활2
+[체육 융합선택] 스포츠 문화, 스포츠 과학
 
-[기술·가정 — 일반선택] 기술·가정, 로봇과 공학세계, 생활과학 탐구
-[기술·가정 — 진로선택] 공학 일반, 창의 공학 설계, 지식 재산 일반, 발명과 기업가 정신, 인공지능과 미래 생활, 아동발달과 부모, 생애 설계와 자립
-[기술·가정 — 융합선택] 가정과학, 지식 재산과 경영, 미래 기술과 사회
-
-[제2외국어/한문 — 일반선택] 한문, 일본어Ⅰ, 중국어Ⅰ, 독일어Ⅰ, 프랑스어Ⅰ, 스페인어Ⅰ
-[제2외국어/한문 — 진로선택] 한문 고전 읽기, 일본어Ⅱ, 중국어Ⅱ, 독일어Ⅱ, 프랑스어Ⅱ, 스페인어Ⅱ`;
+[교양 진로선택] 진로와 직업, 생태와 환경, 인간과 철학, 삶과 종교, 논리와 사고, 인간과 심리, 교육의 이해, 보건
+[교양 융합선택] 인간과 경제활동, 논술`;
 
     function catClass(c) {
-      if (c === '일반선택') return 'cat cat-g';
-      if (c === '진로선택') return 'cat cat-c';
+      if (c==='일반선택') return 'cat cat-g';
+      if (c==='진로선택') return 'cat cat-c';
       return 'cat cat-f';
     }
 
-    function Header() {
+    function Header({ onGuide }) {
       return (
         <header className="header">
           <div className="logo">
-            <div className="logo-icon">진</div>
-            <span className="logo-name">진로과목선택</span>
+            <div className="logo-icon">선</div>
+            <span className="logo-name">선택과목 추천</span>
           </div>
           <nav className="header-nav">
-            <a href="#">고교학점제란?</a>
-            <a href="#">과목 안내</a>
+            <a onClick={onGuide}>고교학점제란?</a>
+            <a onClick={onGuide}>과목 안내</a>
           </nav>
         </header>
       );
@@ -212,25 +229,25 @@
       const valid = form.career.trim() && form.major.trim();
       const set = k => e => setForm(p => ({ ...p, [k]: e.target.value }));
       return (
-        <main className="hero">
-          <h1 className="hero-title">진로과목선택</h1>
-          <p className="hero-sub">학년·진로·전공을 입력하면 AI가 최적의 선택과목을 분석합니다</p>
+        <main className="hero" id="top">
+          <h1 className="hero-title">진로 맞춤<br /><span>선택과목 추천</span></h1>
+          <p className="hero-sub">학년·진로·전공을 입력하면 AI가 최적의 선택과목을 분석합니다<br />2022 개정 교육과정(고교학점제) 기준</p>
           <div className="hero-stats">
-            <div className="hero-stat"><div className="hero-stat-num">2025</div><div className="hero-stat-label">고교학점제 기준</div></div>
+            <div className="hero-stat"><div className="hero-stat-num">2022</div><div className="hero-stat-label">개정 교육과정</div></div>
             <div className="hero-stat"><div className="hero-stat-num">AI</div><div className="hero-stat-label">맞춤 분석</div></div>
-            <div className="hero-stat"><div className="hero-stat-num">비교과</div><div className="hero-stat-label">활동 주제 연계</div></div>
+            <div className="hero-stat"><div className="hero-stat-num">세특</div><div className="hero-stat-label">탐구 주제 연계</div></div>
           </div>
           <div className="form-card">
             <div className="form-row">
               <div className="form-group">
                 <label className="form-label">학년<span className="required">*</span></label>
                 <select className="form-control" value={form.grade} onChange={set('grade')}>
-                  <option value="1">1학년</option>
-                  <option value="2">2학년</option>
+                  <option value="1">고1</option>
+                  <option value="2">고2</option>
                 </select>
               </div>
               <div className="form-group">
-                <label className="form-label">진로 희망<span className="required">*</span></label>
+                <label className="form-label">희망 진로<span className="required">*</span></label>
                 <input className="form-control" placeholder="예: 의사, 소프트웨어 엔지니어…" value={form.career} onChange={set('career')} />
               </div>
               <div className="form-group">
@@ -239,10 +256,10 @@
               </div>
             </div>
             <div className="form-full">
-              <label className="form-label">희망 대학교 <span style={{color:'var(--muted)',fontWeight:400}}>(선택 — 입력 시 해당 대학 권장 과목 반영)</span></label>
-              <input className="form-control" placeholder="예: 서울대, 연세대, 고려대…" value={form.university} onChange={set('university')} />
+              <label className="form-label">희망 대학 <span style={{fontWeight:400,textTransform:'none',letterSpacing:0,color:'rgba(242,234,216,0.35)'}}>선택 — 입력 시 해당 대학 권장 과목 반영</span></label>
+              <input className="form-control" placeholder="예: 서울대, 연세대, 성균관대…" value={form.university} onChange={set('university')} />
             </div>
-            <button className="submit-btn" onClick={onSubmit} disabled={!valid}>추천받기</button>
+            <button className="submit-btn" onClick={onSubmit} disabled={!valid}>추천받기 →</button>
             {error && <div className="error-box">{error}</div>}
           </div>
         </main>
@@ -253,7 +270,8 @@
       return (
         <div className="loading-wrap">
           <div className="spinner" />
-          <p className="loading-msg">과목을 분석하는 중</p>
+          <p className="loading-text">과목을 분석하는 중입니다...</p>
+          <p style={{fontSize:'12px',color:'rgba(242,234,216,0.35)',marginTop:4}}>10~20초 소요됩니다</p>
         </div>
       );
     }
@@ -266,15 +284,15 @@
               <div>
                 <h2 className="results-title">맞춤 과목 추천 결과</h2>
                 <div className="chips">
-                  <span className="chip">{form.grade}학년</span>
+                  <span className="chip">고{form.grade}</span>
                   <span className="chip">{form.career}</span>
                   <span className="chip">{form.major}</span>
                   {form.university && <span className="chip">{form.university}</span>}
                 </div>
               </div>
-              <div className="top-actions">
-                <button className="pdf-btn" onClick={() => window.print()}>📄 PDF 저장</button>
-                <button className="back-btn" onClick={onBack}>← 다시 입력</button>
+              <div className="top-btns">
+                <button className="btn-pdf" onClick={() => window.print()}>📄 PDF 저장</button>
+                <button className="btn-back" onClick={onBack}>← 다시 입력</button>
               </div>
             </div>
             <div className="strategy">
@@ -282,14 +300,14 @@
               <p className="strategy-text">{results.overall_strategy}</p>
             </div>
             <div className="grid">
-              {results.subjects.map((s, i) => (
+              {(results.subjects||[]).map((s,i) => (
                 <div key={i} className="scard">
                   <span className={catClass(s.category)}>{s.category}</span>
                   <div className="sname">{s.name}</div>
                   <p className="sreason">{s.reason}</p>
-                  <div className="ext-label">비교과 활동 주제</div>
+                  <div className="ext-label">세특 탐구 주제</div>
                   <ul className="ext-list">
-                    {s.extracurricular.map((t, j) => (
+                    {(s.extracurricular||[]).map((t,j) => (
                       <li key={j} className="ext-item"><span className="ext-dot" />{t}</li>
                     ))}
                   </ul>
@@ -297,56 +315,87 @@
               ))}
             </div>
             <div className="result-footer">
-              본 추천은 2022 개정 교육과정(고교학점제) 기준이며, 권장과목은 대학·학과별로 매년 변경됩니다.<br />
-              반드시 각 대학 입학처를 통해 최신 정보를 확인하세요. | 필탑학원
+              본 추천은 2022 개정 교육과정 기준이며, 권장과목은 대학·학과별로 매년 변경됩니다. 반드시 각 대학 입학처에서 최신 정보를 확인하세요. | 필탑학원
             </div>
           </div>
         </div>
       );
     }
 
+    function GuideSection() {
+      const subjects = [
+        { cat:'국어', items:['화법과 언어','독서와 작문','문학','주제 탐구 독서','독서 토론과 글쓰기'] },
+        { cat:'수학', items:['대수','미적분Ⅰ','확률과 통계','미적분Ⅱ','기하','경제 수학'] },
+        { cat:'영어', items:['영어Ⅰ','영어Ⅱ','영어 독해와 작문','심화 영어','영미 문학 읽기'] },
+        { cat:'과학', items:['물리학','화학','생명과학','지구과학','역학과 에너지','화학 반응의 세계'] },
+        { cat:'사회', items:['사회와 문화','현대사회와 윤리','세계사','경제','법과 사회','사회문제 탐구'] },
+        { cat:'정보/기술', items:['정보','인공지능 기초','데이터 과학','로봇과 공학세계','창의 공학 설계'] },
+      ];
+      return (
+        <section className="guide-section" id="guide">
+          <div className="guide-inner">
+            <div className="guide-title">2022 개정 교육과정 과목 안내</div>
+            <div className="guide-sub">고교학점제에서 선택할 수 있는 주요 과목 목록입니다</div>
+            <div className="guide-grid">
+              {subjects.map((g,i) => (
+                <div key={i} className="guide-card">
+                  <div className="guide-cat">{g.cat}</div>
+                  <div className="guide-items">
+                    {g.items.map((item,j) => <div key={j} className="guide-item">{item}</div>)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
     function App() {
       const [view, setView] = useState('form');
-      const [form, setForm] = useState({ grade: '1', career: '', major: '', university: '' });
+      const [form, setForm] = useState({ grade:'1', career:'', major:'', university:'' });
       const [results, setResults] = useState(null);
       const [error, setError] = useState(null);
+
+      const scrollToGuide = () => document.getElementById('guide')?.scrollIntoView({ behavior:'smooth' });
 
       const submit = async () => {
         setView('loading');
         setError(null);
-        const msg = `학년: ${form.grade}학년\n진로 희망: ${form.career}\n희망 전공: ${form.major}${form.university ? `\n희망 대학교: ${form.university}` : ''}`;
+        const msg = `학년: 고${form.grade}\n희망 진로: ${form.career}\n희망 전공: ${form.major}${form.university ? `\n희망 대학: ${form.university}` : ''}`;
         try {
           const res = await fetch('/api/proxy', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
             body: JSON.stringify({
               model: 'claude-haiku-4-5-20251001',
               max_tokens: 2000,
               system: SYSTEM,
-              messages: [{ role: 'user', content: msg }]
+              messages: [{ role:'user', content: msg }]
             }),
           });
           const data = await res.json();
           if (!res.ok) {
-            const msg = data.error?.message || data.error || `서버 오류 (${res.status})`;
-            throw new Error(msg);
+            const errMsg = data?.error?.message || data?.error || `서버 오류 (${res.status})`;
+            throw new Error(String(errMsg));
           }
           const raw = data.content[0].text.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
           const parsed = JSON.parse(raw);
           setResults(parsed);
           setView('results');
         } catch(e) {
-          setError(`오류가 발생했습니다: ${e.message}`);
+          setError(`오류: ${e.message}`);
           setView('form');
         }
       };
 
       return (
         <>
-          <Header />
-          {view === 'form' && <FormView form={form} setForm={setForm} onSubmit={submit} error={error} />}
-          {view === 'loading' && <LoadingView />}
-          {view === 'results' && results && <ResultsView results={results} form={form} onBack={() => { setView('form'); setError(null); }} />}
+          <Header onGuide={scrollToGuide} />
+          {view==='form' && <FormView form={form} setForm={setForm} onSubmit={submit} error={error} />}
+          {view==='loading' && <LoadingView />}
+          {view==='results' && results && <ResultsView results={results} form={form} onBack={() => { setView('form'); setError(null); }} />}
+          <GuideSection />
         </>
       );
     }
