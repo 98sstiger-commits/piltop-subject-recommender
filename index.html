@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>선택과목 추천 - 고교학점제 맞춤 분석</title>
+  <title>과목나침반 - AI 선택과목 추천</title>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -25,38 +25,38 @@
 
     /* HEADER */
     .header { background:var(--green); border-bottom:1px solid var(--border); padding:0 48px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
-    .logo { display:flex; align-items:center; gap:10px; }
-    .logo-icon { width:34px; height:34px; background:var(--gold); border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--green3); font-weight:900; font-size:15px; }
-    .logo-name { font-size:17px; font-weight:700; color:var(--cream); }
+    .logo-name { font-size:17px; font-weight:800; color:var(--cream); letter-spacing:-0.3px; }
+    .logo-name span { color:var(--gold); }
     .header-nav { display:flex; gap:28px; }
     .header-nav a { font-size:14px; color:var(--muted); text-decoration:none; transition:color 0.2s; cursor:pointer; }
     .header-nav a:hover { color:var(--cream); }
 
     /* HERO */
     .hero { background:var(--green); padding:80px 24px 90px; text-align:center; border-bottom:1px solid var(--border); }
-    .hero-title { font-size:clamp(38px,5.5vw,68px); font-weight:800; color:var(--cream); line-height:1.1; margin-bottom:14px; letter-spacing:-1px; }
+    .hero-eyebrow { font-size:12px; font-weight:700; color:var(--gold); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:20px; }
+    .hero-title { font-size:clamp(36px,5vw,62px); font-weight:900; color:var(--cream); line-height:1.1; margin-bottom:12px; letter-spacing:-1.5px; }
     .hero-title span { color:var(--gold); }
-    .hero-sub { font-size:16px; color:var(--muted); margin-bottom:40px; line-height:1.7; }
+    .hero-tagline { font-size:16px; color:var(--muted); margin-bottom:40px; line-height:1.8; font-weight:400; }
     .hero-stats { display:flex; gap:40px; justify-content:center; margin-bottom:52px; flex-wrap:wrap; }
-    .hero-stat-num { font-size:26px; font-weight:800; color:var(--gold); line-height:1; }
-    .hero-stat-label { font-size:12px; color:var(--muted); margin-top:4px; }
+    .hero-stat-num { font-size:24px; font-weight:800; color:var(--gold); line-height:1; }
+    .hero-stat-label { font-size:11px; color:var(--muted); margin-top:4px; }
 
-    /* FORM CARD */
-    .form-card { max-width:720px; margin:0 auto; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:18px; padding:32px 28px 24px; backdrop-filter:blur(4px); }
-    .form-row { display:grid; grid-template-columns:130px 1fr 1fr; gap:12px; margin-bottom:12px; }
+    /* FORM */
+    .form-card { max-width:720px; margin:0 auto; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:18px; padding:32px 28px 24px; }
+    .form-row { display:grid; grid-template-columns:120px 1fr 1fr; gap:12px; margin-bottom:12px; }
     .form-group { display:flex; flex-direction:column; }
     .form-label { font-size:11px; font-weight:700; color:var(--muted); letter-spacing:0.06em; margin-bottom:7px; text-transform:uppercase; }
     .required { color:var(--gold); margin-left:2px; }
-    .form-control { background:rgba(255,255,255,0.07); border:1px solid var(--border); border-radius:9px; color:var(--cream); padding:11px 14px; font-size:14px; outline:none; transition:border-color 0.2s,background 0.2s; font-family:inherit; width:100%; }
+    .form-control { background:rgba(255,255,255,0.07); border:1px solid var(--border); border-radius:9px; color:var(--cream); padding:11px 14px; font-size:14px; outline:none; transition:border-color 0.2s; font-family:inherit; width:100%; }
     .form-control:focus { border-color:var(--gold); background:rgba(255,255,255,0.1); }
-    .form-control::placeholder { color:rgba(242,234,216,0.3); }
+    .form-control::placeholder { color:rgba(242,234,216,0.28); }
     select.form-control option { background:#1a3a28; color:var(--cream); }
     .form-full { margin-bottom:20px; }
     .submit-btn { width:100%; padding:14px; background:var(--gold); border:none; border-radius:10px; color:var(--green3); font-size:16px; font-weight:800; cursor:pointer; font-family:inherit; transition:background 0.2s,transform 0.1s; letter-spacing:-0.3px; }
     .submit-btn:hover:not(:disabled) { background:var(--gold2); }
     .submit-btn:active:not(:disabled) { transform:scale(0.98); }
-    .submit-btn:disabled { opacity:0.4; cursor:not-allowed; }
-    .error-box { margin-top:12px; padding:12px 16px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); border-radius:8px; color:#f87171; font-size:13px; }
+    .submit-btn:disabled { opacity:0.38; cursor:not-allowed; }
+    .error-box { margin-top:12px; padding:12px 16px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.28); border-radius:8px; color:#f87171; font-size:13px; }
 
     /* LOADING */
     .loading-wrap { min-height:60vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
@@ -68,7 +68,7 @@
     .results-wrap { padding:48px 24px 80px; }
     .results-inner { max-width:1100px; margin:0 auto; }
     .results-top { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:28px; flex-wrap:wrap; }
-    .results-title { font-size:24px; font-weight:800; color:var(--cream); margin-bottom:10px; }
+    .results-title { font-size:24px; font-weight:800; color:var(--cream); margin-bottom:10px; letter-spacing:-0.5px; }
     .chips { display:flex; gap:7px; flex-wrap:wrap; }
     .chip { padding:4px 12px; background:rgba(201,168,67,0.15); border:1px solid rgba(201,168,67,0.3); color:var(--gold); border-radius:20px; font-size:12px; font-weight:600; }
     .top-btns { display:flex; gap:9px; }
@@ -76,13 +76,9 @@
     .btn-pdf:hover { background:var(--gold2); }
     .btn-back { padding:9px 18px; background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--muted); font-size:13px; cursor:pointer; font-family:inherit; transition:all 0.15s; white-space:nowrap; }
     .btn-back:hover { border-color:var(--gold); color:var(--gold); }
-
-    /* STRATEGY */
     .strategy { background:rgba(201,168,67,0.08); border:1px solid rgba(201,168,67,0.2); border-radius:14px; padding:24px 28px; margin-bottom:28px; }
     .strategy-label { font-size:10px; font-weight:800; color:var(--gold); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:10px; }
     .strategy-text { font-size:15px; line-height:1.85; color:var(--cream); }
-
-    /* GRID */
     .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
     .scard { background:var(--green); border:1px solid var(--border); border-radius:14px; padding:20px; transition:border-color 0.2s,transform 0.2s; }
     .scard:hover { border-color:rgba(201,168,67,0.35); transform:translateY(-2px); }
@@ -96,27 +92,25 @@
     .ext-list { list-style:none; display:flex; flex-direction:column; gap:7px; }
     .ext-item { display:flex; align-items:flex-start; gap:8px; font-size:12px; color:var(--muted); line-height:1.55; }
     .ext-dot { width:4px; height:4px; background:var(--gold); border-radius:50%; margin-top:5px; flex-shrink:0; }
-    .result-footer { margin-top:32px; text-align:center; font-size:11px; color:rgba(242,234,216,0.35); line-height:1.7; }
+    .result-footer { margin-top:32px; text-align:center; font-size:11px; color:rgba(242,234,216,0.3); line-height:1.7; }
 
-    /* GUIDE SECTION */
+    /* GUIDE */
     .guide-section { background:var(--green); border-top:1px solid var(--border); padding:64px 24px; }
     .guide-inner { max-width:900px; margin:0 auto; }
-    .guide-title { font-size:22px; font-weight:800; color:var(--cream); margin-bottom:8px; }
-    .guide-sub { font-size:14px; color:var(--muted); margin-bottom:36px; }
-    .guide-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
-    .guide-card { background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:12px; padding:20px; }
+    .guide-title { font-size:22px; font-weight:800; color:var(--cream); margin-bottom:6px; }
+    .guide-sub { font-size:14px; color:var(--muted); margin-bottom:32px; }
+    .guide-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+    .guide-card { background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:12px; padding:18px; }
     .guide-cat { font-size:11px; font-weight:700; color:var(--gold); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:10px; }
-    .guide-items { display:flex; flex-direction:column; gap:5px; }
-    .guide-item { font-size:12px; color:var(--muted); line-height:1.5; padding:4px 0; border-bottom:1px solid var(--border); }
+    .guide-item { font-size:12px; color:var(--muted); line-height:1.5; padding:5px 0; border-bottom:1px solid var(--border); }
     .guide-item:last-child { border-bottom:none; }
 
     /* RESPONSIVE */
-    @media (max-width:900px) { .grid { grid-template-columns:repeat(2,1fr); } .guide-grid { grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:900px) { .grid,.guide-grid { grid-template-columns:repeat(2,1fr); } }
     @media (max-width:640px) {
       .form-row { grid-template-columns:1fr 1fr; }
       .form-row > :first-child { grid-column:1/-1; }
-      .grid { grid-template-columns:1fr; }
-      .guide-grid { grid-template-columns:1fr; }
+      .grid,.guide-grid { grid-template-columns:1fr; }
       .header { padding:0 20px; }
       .hero { padding:56px 16px 72px; }
       .form-card { padding:22px 16px 18px; }
@@ -130,9 +124,8 @@
       .results-wrap { background:#fff; padding:20px 0; }
       .scard { border:1px solid #ddd; break-inside:avoid; background:#fff; }
       .sname,.results-title,.strategy-text { color:#111 !important; }
-      .sreason,.ext-item { color:#444 !important; }
+      .sreason,.ext-item { color:#555 !important; }
       .strategy { border:1px solid #c9a843; background:#fffbf0; }
-      .chip { background:#f5f5f5; color:#555; border:1px solid #ddd; }
     }
   </style>
 </head>
@@ -142,67 +135,57 @@
     const { useState } = React;
 
     const SYSTEM = `당신은 2022 개정 교육과정(고교학점제) 전문 과목추천 AI입니다.
-반드시 JSON만 응답하세요. 마크다운·코드블록·추가 설명 없이 순수 JSON만 출력하세요.
+반드시 JSON만 응답하세요. 마크다운·코드블록 없이 순수 JSON만 출력하세요.
 
-응답 형식:
 {
-  "overall_strategy": "이 학생의 과목 선택 전략 (3~4문장)",
+  "overall_strategy": "과목 선택 전략 3~4문장",
   "subjects": [
     {
       "name": "과목명",
       "category": "일반선택",
-      "reason": "이 과목을 선택해야 하는 이유 (2~3문장, 진로·전공·대학과 구체적으로 연계)",
-      "extracurricular": ["세특/비교과 탐구 주제 1", "세특/비교과 탐구 주제 2", "세특/비교과 탐구 주제 3"]
+      "reason": "선택 이유 2~3문장 (진로·전공과 구체적 연계)",
+      "extracurricular": ["세특 탐구 주제 1", "세특 탐구 주제 2", "세특 탐구 주제 3"]
     }
   ]
 }
 
 규칙:
-- category는 "일반선택" "진로선택" "융합선택" 중 하나만
-- 총 6~9개 과목, 카테고리 고루 분포
-- 반드시 아래 2022 개정 교육과정 과목명만 사용 (구 교육과정 과목명 절대 금지)
-- 희망 대학이 있으면 해당 대학 권장 과목 우선 반영
-- 고1이면 고2~3 전체 로드맵, 고2이면 고3 집중 추천
+- category: "일반선택" "진로선택" "융합선택" 중 하나
+- 총 6~9개, 카테고리 고루 분포
+- 반드시 아래 목록의 과목명만 사용 (구 교육과정 과목명 금지)
+- 희망 대학 있으면 해당 대학 권장 과목 반영
+- 고1: 고2~3 전체 로드맵, 고2: 고3 집중 추천
 
-=== 2022 개정 교육과정 선택과목 목록 ===
-[국어 일반선택] 화법과 언어, 독서와 작문, 문학
-[국어 진로선택] 주제 탐구 독서, 문학과 영상, 직무 의사소통
-[국어 융합선택] 독서 토론과 글쓰기, 매체 의사소통, 언어생활 탐구
-
-[수학 일반선택] 대수, 미적분Ⅰ, 확률과 통계
-[수학 진로선택] 미적분Ⅱ, 기하, 경제 수학, 인공지능 수학, 직업 수학
-[수학 융합선택] 수학과 문화, 실용 통계, 수학과제 탐구
-
-[영어 일반선택] 영어Ⅰ, 영어Ⅱ, 영어 독해와 작문
-[영어 진로선택] 영미 문학 읽기, 영어 발표와 토론, 심화 영어, 직무 영어
-[영어 융합선택] 실생활 영어 회화, 미디어 영어, 세계 문화와 영어
-
-[사회 일반선택] 세계시민과 지리, 세계사, 사회와 문화, 현대사회와 윤리
-[사회 진로선택] 한국지리 탐구, 도시의 미래 탐구, 동아시아사 주제 탐구, 정치, 경제, 법과 사회, 윤리와 사상, 인문학과 윤리, 국제 관계의 이해
-[사회 융합선택] 여행지리, 역사로 탐구하는 현대 세계, 사회문제 탐구, 금융과 경제생활, 윤리문제 탐구, 기후 변화와 지속가능한 세계
-
-[과학 일반선택] 물리학, 화학, 생명과학, 지구과학
-[과학 진로선택] 역학과 에너지, 전자기와 빛, 물질과 에너지, 화학 반응의 세계, 세포와 물질대사, 생물의 유전, 지구시스템과학, 행성우주과학
-[과학 융합선택] 과학의 역사와 문화, 기후 변화와 환경생태, 융합과학 탐구
-
-[정보 일반선택] 정보
-[정보 진로선택] 인공지능 기초, 데이터 과학, 소프트웨어와 생활
-[정보 융합선택] 정보 통신과 미래 사회
-
-[기술가정 일반선택] 기술·가정
-[기술가정 진로선택] 로봇과 공학세계, 공학 일반, 창의 공학 설계, 지식 재산 일반, 발명과 기업가 정신, 인공지능과 미래 생활, 아동발달과 부모, 생애 설계와 자립
-[기술가정 융합선택] 가정과학, 지식 재산과 경영, 미래 기술과 사회
-
-[예술 일반선택] 음악, 미술, 연극
-[예술 진로선택] 음악 연주와 창작, 음악 감상과 비평, 미술 창작, 미술 감상과 비평
-[예술 융합선택] 음악과 미디어, 미술과 매체
-
-[체육 일반선택] 체육1, 체육2
-[체육 진로선택] 운동과 건강, 스포츠 생활1, 스포츠 생활2
-[체육 융합선택] 스포츠 문화, 스포츠 과학
-
-[교양 진로선택] 진로와 직업, 생태와 환경, 인간과 철학, 삶과 종교, 논리와 사고, 인간과 심리, 교육의 이해, 보건
-[교양 융합선택] 인간과 경제활동, 논술`;
+=== 2022 개정 교육과정 선택과목 ===
+[국어 일반] 화법과 언어, 독서와 작문, 문학
+[국어 진로] 주제 탐구 독서, 문학과 영상, 직무 의사소통
+[국어 융합] 독서 토론과 글쓰기, 매체 의사소통, 언어생활 탐구
+[수학 일반] 대수, 미적분Ⅰ, 확률과 통계
+[수학 진로] 미적분Ⅱ, 기하, 경제 수학, 인공지능 수학, 직업 수학
+[수학 융합] 수학과 문화, 실용 통계, 수학과제 탐구
+[영어 일반] 영어Ⅰ, 영어Ⅱ, 영어 독해와 작문
+[영어 진로] 영미 문학 읽기, 영어 발표와 토론, 심화 영어, 직무 영어
+[영어 융합] 실생활 영어 회화, 미디어 영어, 세계 문화와 영어
+[사회 일반] 세계시민과 지리, 세계사, 사회와 문화, 현대사회와 윤리
+[사회 진로] 한국지리 탐구, 도시의 미래 탐구, 동아시아사 주제 탐구, 정치, 경제, 법과 사회, 윤리와 사상, 인문학과 윤리, 국제 관계의 이해
+[사회 융합] 여행지리, 역사로 탐구하는 현대 세계, 사회문제 탐구, 금융과 경제생활, 윤리문제 탐구, 기후 변화와 지속가능한 세계
+[과학 일반] 물리학, 화학, 생명과학, 지구과학
+[과학 진로] 역학과 에너지, 전자기와 빛, 물질과 에너지, 화학 반응의 세계, 세포와 물질대사, 생물의 유전, 지구시스템과학, 행성우주과학
+[과학 융합] 과학의 역사와 문화, 기후 변화와 환경생태, 융합과학 탐구
+[정보 일반] 정보
+[정보 진로] 인공지능 기초, 데이터 과학, 소프트웨어와 생활
+[정보 융합] 정보 통신과 미래 사회
+[기술가정 일반] 기술·가정
+[기술가정 진로] 로봇과 공학세계, 공학 일반, 창의 공학 설계, 지식 재산 일반, 발명과 기업가 정신, 인공지능과 미래 생활, 아동발달과 부모, 생애 설계와 자립
+[기술가정 융합] 가정과학, 지식 재산과 경영, 미래 기술과 사회
+[예술 일반] 음악, 미술, 연극
+[예술 진로] 음악 연주와 창작, 음악 감상과 비평, 미술 창작, 미술 감상과 비평
+[예술 융합] 음악과 미디어, 미술과 매체
+[체육 일반] 체육1, 체육2
+[체육 진로] 운동과 건강, 스포츠 생활1, 스포츠 생활2
+[체육 융합] 스포츠 문화, 스포츠 과학
+[교양 진로] 진로와 직업, 생태와 환경, 인간과 철학, 삶과 종교, 논리와 사고, 인간과 심리, 교육의 이해, 보건
+[교양 융합] 인간과 경제활동, 논술`;
 
     function catClass(c) {
       if (c==='일반선택') return 'cat cat-g';
@@ -213,10 +196,7 @@
     function Header({ onGuide }) {
       return (
         <header className="header">
-          <div className="logo">
-            <div className="logo-icon">선</div>
-            <span className="logo-name">선택과목 추천</span>
-          </div>
+          <div className="logo-name">과목<span>나침반</span></div>
           <nav className="header-nav">
             <a onClick={onGuide}>고교학점제란?</a>
             <a onClick={onGuide}>과목 안내</a>
@@ -230,8 +210,9 @@
       const set = k => e => setForm(p => ({ ...p, [k]: e.target.value }));
       return (
         <main className="hero" id="top">
-          <h1 className="hero-title">진로 맞춤<br /><span>선택과목 추천</span></h1>
-          <p className="hero-sub">학년·진로·전공을 입력하면 AI가 최적의 선택과목을 분석합니다<br />2022 개정 교육과정(고교학점제) 기준</p>
+          <div className="hero-eyebrow">2022 개정 교육과정 · 고교학점제</div>
+          <h1 className="hero-title">진로가 정해지면<br /><span>과목은 AI가 설계합니다</span></h1>
+          <p className="hero-tagline">학년·진로·전공을 입력하면<br />맞춤 선택과목과 세특 탐구 주제까지 한번에</p>
           <div className="hero-stats">
             <div className="hero-stat"><div className="hero-stat-num">2022</div><div className="hero-stat-label">개정 교육과정</div></div>
             <div className="hero-stat"><div className="hero-stat-num">AI</div><div className="hero-stat-label">맞춤 분석</div></div>
@@ -256,7 +237,7 @@
               </div>
             </div>
             <div className="form-full">
-              <label className="form-label">희망 대학 <span style={{fontWeight:400,textTransform:'none',letterSpacing:0,color:'rgba(242,234,216,0.35)'}}>선택 — 입력 시 해당 대학 권장 과목 반영</span></label>
+              <label className="form-label">희망 대학 <span style={{fontWeight:400,textTransform:'none',letterSpacing:0,color:'rgba(242,234,216,0.3)'}}>선택 — 입력 시 해당 대학 권장 과목 반영</span></label>
               <input className="form-control" placeholder="예: 서울대, 연세대, 성균관대…" value={form.university} onChange={set('university')} />
             </div>
             <button className="submit-btn" onClick={onSubmit} disabled={!valid}>추천받기 →</button>
@@ -271,7 +252,7 @@
         <div className="loading-wrap">
           <div className="spinner" />
           <p className="loading-text">과목을 분석하는 중입니다...</p>
-          <p style={{fontSize:'12px',color:'rgba(242,234,216,0.35)',marginTop:4}}>10~20초 소요됩니다</p>
+          <p style={{fontSize:'12px',color:'rgba(242,234,216,0.3)',marginTop:4}}>10~20초 소요됩니다</p>
         </div>
       );
     }
@@ -308,14 +289,14 @@
                   <div className="ext-label">세특 탐구 주제</div>
                   <ul className="ext-list">
                     {(s.extracurricular||[]).map((t,j) => (
-                      <li key={j} className="ext-item"><span className="ext-dot" />{t}</li>
+                      <li key={j} className="ext-item"><span className="ext-dot"/>{t}</li>
                     ))}
                   </ul>
                 </div>
               ))}
             </div>
             <div className="result-footer">
-              본 추천은 2022 개정 교육과정 기준이며, 권장과목은 대학·학과별로 매년 변경됩니다. 반드시 각 대학 입학처에서 최신 정보를 확인하세요. | 필탑학원
+              2022 개정 교육과정 기준 · 권장과목은 대학·학과별로 매년 변경됩니다 · 반드시 각 대학 입학처에서 최신 정보를 확인하세요 · 필탑학원
             </div>
           </div>
         </div>
@@ -323,26 +304,24 @@
     }
 
     function GuideSection() {
-      const subjects = [
+      const guides = [
         { cat:'국어', items:['화법과 언어','독서와 작문','문학','주제 탐구 독서','독서 토론과 글쓰기'] },
         { cat:'수학', items:['대수','미적분Ⅰ','확률과 통계','미적분Ⅱ','기하','경제 수학'] },
         { cat:'영어', items:['영어Ⅰ','영어Ⅱ','영어 독해와 작문','심화 영어','영미 문학 읽기'] },
-        { cat:'과학', items:['물리학','화학','생명과학','지구과학','역학과 에너지','화학 반응의 세계'] },
+        { cat:'과학', items:['물리학','화학','생명과학','지구과학','역학과 에너지','화학 반응의 세계','세포와 물질대사'] },
         { cat:'사회', items:['사회와 문화','현대사회와 윤리','세계사','경제','법과 사회','사회문제 탐구'] },
-        { cat:'정보/기술', items:['정보','인공지능 기초','데이터 과학','로봇과 공학세계','창의 공학 설계'] },
+        { cat:'정보·기술', items:['정보','인공지능 기초','데이터 과학','로봇과 공학세계','창의 공학 설계'] },
       ];
       return (
         <section className="guide-section" id="guide">
           <div className="guide-inner">
             <div className="guide-title">2022 개정 교육과정 과목 안내</div>
-            <div className="guide-sub">고교학점제에서 선택할 수 있는 주요 과목 목록입니다</div>
+            <div className="guide-sub">고교학점제에서 선택 가능한 주요 과목입니다</div>
             <div className="guide-grid">
-              {subjects.map((g,i) => (
+              {guides.map((g,i) => (
                 <div key={i} className="guide-card">
                   <div className="guide-cat">{g.cat}</div>
-                  <div className="guide-items">
-                    {g.items.map((item,j) => <div key={j} className="guide-item">{item}</div>)}
-                  </div>
+                  {g.items.map((item,j) => <div key={j} className="guide-item">{item}</div>)}
                 </div>
               ))}
             </div>
@@ -357,34 +336,33 @@
       const [results, setResults] = useState(null);
       const [error, setError] = useState(null);
 
-      const scrollToGuide = () => document.getElementById('guide')?.scrollIntoView({ behavior:'smooth' });
+      const scrollToGuide = () => document.getElementById('guide')?.scrollIntoView({behavior:'smooth'});
 
       const submit = async () => {
         setView('loading');
         setError(null);
-        const msg = `학년: 고${form.grade}\n희망 진로: ${form.career}\n희망 전공: ${form.major}${form.university ? `\n희망 대학: ${form.university}` : ''}`;
+        const msg = `학년: 고${form.grade}\n희망 진로: ${form.career}\n희망 전공: ${form.major}${form.university?`\n희망 대학: ${form.university}`:''}`;
         try {
           const res = await fetch('/api/proxy', {
             method:'POST',
             headers:{'Content-Type':'application/json'},
             body: JSON.stringify({
-              model: 'claude-haiku-4-5-20251001',
-              max_tokens: 2000,
-              system: SYSTEM,
-              messages: [{ role:'user', content: msg }]
+              model:'claude-haiku-4-5-20251001',
+              max_tokens:2000,
+              system:SYSTEM,
+              messages:[{role:'user',content:msg}]
             }),
           });
           const data = await res.json();
           if (!res.ok) {
-            const errMsg = data?.error?.message || data?.error || `서버 오류 (${res.status})`;
-            throw new Error(String(errMsg));
+            throw new Error(data?.error?.message || data?.error || `서버 오류 (${res.status})`);
           }
           const raw = data.content[0].text.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
           const parsed = JSON.parse(raw);
           setResults(parsed);
           setView('results');
         } catch(e) {
-          setError(`오류: ${e.message}`);
+          setError(`오류: ${String(e.message)}`);
           setView('form');
         }
       };
@@ -394,7 +372,7 @@
           <Header onGuide={scrollToGuide} />
           {view==='form' && <FormView form={form} setForm={setForm} onSubmit={submit} error={error} />}
           {view==='loading' && <LoadingView />}
-          {view==='results' && results && <ResultsView results={results} form={form} onBack={() => { setView('form'); setError(null); }} />}
+          {view==='results' && results && <ResultsView results={results} form={form} onBack={()=>{setView('form');setError(null);}} />}
           <GuideSection />
         </>
       );
