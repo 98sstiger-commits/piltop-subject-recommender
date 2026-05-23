@@ -397,30 +397,16 @@
 <script type="text/babel">
 const { useState, useEffect } = React;
 
-const SB_URL = 'https://zmtldohklivkzpfdyflc.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptdGxkb2hrbGl2a3pwZmR5ZmxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NjgxMDQsImV4cCI6MjA4ODU0NDEwNH0.cv1WrvDzNedVZABWyRCS9ARRxf4Si9qgeUqEvhpHWlo';
-
-const saveResult = async (form, results) => {
-  const id = Math.random().toString(36).substr(2,9);
-  const key = `curricula_${id}`;
-  try {
-    await fetch(`${SB_URL}/rest/v1/piltop_data`, {
-      method:'POST',
-      headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify({key, value:`${form.career} ${form.major}`, jsonb:{form,results}})
-    });
-    return id;
-  } catch { return null; }
+// URL 인코딩 방식 - Supabase 불필요
+const encodeResult = (data) => {
+  try { return btoa(encodeURIComponent(JSON.stringify(data))); } catch { return null; }
 };
-
-const loadResult = async (id) => {
-  try {
-    const res = await fetch(`${SB_URL}/rest/v1/piltop_data?key=eq.curricula_${id}&select=jsonb`, {
-      headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}
-    });
-    const data = await res.json();
-    return data?.[0]?.jsonb || null;
-  } catch { return null; }
+const decodeResult = (str) => {
+  try { return JSON.parse(decodeURIComponent(atob(str))); } catch { return null; }
+};
+const makeShareUrl = (data) => {
+  const e = encodeResult(data);
+  return e ? `${location.origin}${location.pathname}?r=${e}` : null;
 };
 
 const SYSTEM = `당신은 2022 개정 교육과정(고교학점제) 전문 과목추천 AI입니다.
@@ -666,9 +652,7 @@ function FormPage({onBack,onResult}){
       if(!jm) throw new Error('결과 파싱 오류. 다시 시도해주세요.');
       clearInterval(t);
       const results=JSON.parse(jm[0]);
-      // Supabase에 저장
-      const id=await saveResult(form,results);
-      onResult({results,form,shareId:id});
+      onResult({results,form});
     }catch(e){clearInterval(t);setError(`오류: ${String(e.message)}`);setLoading(false);}
   };
 
@@ -733,15 +717,13 @@ function PSection({priority,subjects}){
   );
 }
 
-function ResultsPage({results,form,shareId,onBack,isShared}){
+function ResultsPage({results,form,onBack,isShared}){
   const [toast,setToast]=useState('');
   const total=(results.subjects||[]).length;
   const 필수cnt=(results.subjects||[]).filter(s=>s.priority==='필수').length;
   const 추천cnt=(results.subjects||[]).filter(s=>s.priority==='추천').length;
 
-  const shareUrl=shareId
-    ? `${location.origin}${location.pathname}?r=${shareId}`
-    : null;
+  const shareUrl=makeShareUrl({results,form});
 
   const copy=()=>{
     if(!shareUrl){setToast('링크 생성 중 오류가 발생했습니다.');setTimeout(()=>setToast(''),2500);return;}
@@ -806,14 +788,11 @@ function App(){
       const params=new URLSearchParams(location.search);
       const rid=params.get('r');
       if(rid){
-        setLoading(true);
-        loadResult(rid).then(d=>{
-          if(d?.results&&d?.form){
-            setRdata({...d,shareId:rid,isShared:true});
-            setPage('results');
-          }
-          setLoading(false);
-        }).catch(()=>setLoading(false));
+        const d=decodeResult(rid);
+        if(d?.results&&d?.form){
+          setRdata({...d,isShared:true});
+          setPage('results');
+        }
       }
     } catch(e){console.error(e);}
   },[]);
@@ -822,14 +801,16 @@ function App(){
 
   const goForm=()=>{setPage('form');window.scrollTo(0,0);};
   const goHome=()=>{setPage('landing');window.scrollTo(0,0);history.pushState('','',location.pathname);};
-  const goResult=d=>{setRdata(d);setPage('results');
-    if(d.shareId) history.pushState('','',`${location.pathname}?r=${d.shareId}`);
+  const goResult=d=>{
+    setRdata(d);setPage('results');
+    const u=makeShareUrl(d);
+    if(u) history.pushState('','',u);
     window.scrollTo(0,0);
   };
 
   if(page==='landing') return <Landing onStart={goForm}/>;
   if(page==='form') return <FormPage onBack={goHome} onResult={goResult}/>;
-  if(page==='results'&&rdata) return <ResultsPage results={rdata.results} form={rdata.form} shareId={rdata.shareId} onBack={()=>{setPage('form');history.pushState('','',location.pathname);}} isShared={rdata.isShared}/>;
+  if(page==='results'&&rdata) return <ResultsPage results={rdata.results} form={rdata.form} onBack={()=>{setPage('form');history.pushState('','',location.pathname);}} isShared={rdata.isShared}/>;
   return null;
 }
 
