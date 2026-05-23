@@ -86,20 +86,37 @@
     .tut-step-n{font-weight:700;color:#c8b878;margin-right:3px;font-size:11px}
 
     /* ── INTRO ── */
-    .intro{background:radial-gradient(at center top,#12513a 0%,#0b3a2e 50%,#072519 100%);padding:64px 72px;display:flex;flex-direction:row;align-items:center;position:relative;overflow:hidden;gap:0}
+    .intro{
+      background:radial-gradient(at center top,#12513a 0%,#0b3a2e 50%,#072519 100%);
+      padding:56px 72px;
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:48px;
+      align-items:center;
+      position:relative;overflow:hidden;
+    }
+    .intro-bg-svg{
+      position:absolute;right:-100px;top:50%;transform:translateY(-50%);
+      width:520px;height:520px;pointer-events:none;
+    }
+    .intro-left{position:relative;z-index:1}
+    .intro-right{
+      position:relative;z-index:1;
+      display:flex;align-items:center;
+    }
     .intro::before{content:'';position:absolute;top:0;left:0;right:0;height:80px;
       background:linear-gradient(to bottom,rgba(245,240,228,0.1),transparent);pointer-events:none}
     .intro-book{content:'';position:absolute;right:48px;top:50%;transform:translateY(-50%);width:280px;height:280px;opacity:0.4;
       background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none'%3E%3Cpath d='M100 22C62 22 32 37 32 37L32 168C32 168 62 156 100 156C138 156 168 168 168 168L168 37C168 37 138 22 100 22Z' stroke='rgba(237,229,204,0.12)' stroke-width='1.5' fill='rgba(237,229,204,0.03)'/%3E%3Cpath d='M100 22L100 156' stroke='rgba(237,229,204,0.12)' stroke-width='1.5'/%3E%3Cpath d='M48 50L95 50M48 63L92 63M48 76L90 76M48 89L88 89M48 102L85 102' stroke='rgba(237,229,204,0.08)' stroke-width='1'/%3E%3Cpath d='M105 50L152 50M108 63L152 63M110 76L152 76M112 89L152 89M115 102L152 102' stroke='rgba(237,229,204,0.08)' stroke-width='1'/%3E%3Ccircle cx='100' cy='135' r='10' stroke='rgba(237,229,204,0.08)' stroke-width='1' fill='none'/%3E%3C/svg%3E");
       background-size:contain;background-repeat:no-repeat;opacity:.9;pointer-events:none}
-    .intro-left{flex:1;min-width:0;z-index:1}.intro-ey{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.18em;text-transform:uppercase;margin-bottom:12px}
+    .intro-ey{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.18em;text-transform:uppercase;margin-bottom:12px}
     .intro-ttl{font-family:var(--fd);font-size:clamp(44px,5vw,68px);font-weight:900;color:var(--cream);line-height:1.0;letter-spacing:-1px;margin-bottom:10px}
     .intro-tag{font-size:15px;color:rgba(237,229,204,.48);margin-bottom:14px;line-height:1.7}
     .intro-desc{font-size:15px;color:rgba(237,229,204,.58);line-height:1.9}
     .intro-desc strong{color:var(--cream)}
 
     /* 통계 — 이미지1 스타일 */
-    .stats{display:flex;gap:40px;flex-wrap:wrap;align-items:flex-end;margin-top:40px}
+    .stats{display:flex;gap:40px;flex-wrap:wrap;align-items:flex-end}
     .stat{text-align:left;min-width:60px}
     .stat-num{font-family:var(--fd);font-size:clamp(32px,3.5vw,48px);font-weight:900;color:var(--gold);line-height:1;letter-spacing:-1px}
     .stat-lbl{font-size:12px;color:rgba(237,229,204,.42);margin-top:6px;white-space:nowrap;letter-spacing:.04em}
@@ -484,20 +501,23 @@ function Landing({onStart}){
         </div>
       </div>
       <section className="intro">
+        {/* 배경 원형 SVG - 우측 */}
+        <div className="intro-bg-svg"><svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" stroke="rgba(237,229,204,0.1)" strokeWidth="0.4"/><circle cx="50" cy="50" r="38" stroke="rgba(237,229,204,0.08)" strokeWidth="0.4"/><circle cx="50" cy="50" r="28" stroke="rgba(237,229,204,0.06)" strokeWidth="0.4"/><path d="M50 2 L50 98 M2 50 L98 50" stroke="rgba(237,229,204,0.05)" strokeWidth="0.25"/><path d="M15 15 L85 85 M85 15 L15 85" stroke="rgba(237,229,204,0.05)" strokeWidth="0.25"/><polygon points="50,5 93,27.5 93,72.5 50,95 7,72.5 7,27.5" stroke="rgba(237,229,204,0.07)" strokeWidth="0.4" fill="none"/></svg></div>
+        {/* 왼쪽 텍스트 */}
         <div className="intro-left">
           <div className="intro-ey">SUBJECT RECOMMENDER · 튜토리얼</div>
           <div className="intro-ttl">큐리큘라</div>
           <div className="intro-tag">고교학점제의 시작, 과목 선택을 가장 빠르게</div>
           <p className="intro-desc">기존 과목 선택은 너무 막막했습니다.<br/>큐리큘라는 <strong>진로 · 전공 · 대학</strong>을 입력하면<br/>웹 검색으로 최신 권장과목을 실시간 확인하고,<br/>필수 · 추천 · 선택으로 명확히 구분해 세특 주제까지 제안합니다.</p>
+        </div>
+        {/* 오른쪽 숫자 - 파인드림과 동일 */}
+        <div className="intro-right">
           <div className="stats">
             <div className="stat"><div className="stat-num">3</div><div className="stat-lbl">입력 항목</div></div>
             <div className="stat"><div className="stat-num">실시간</div><div className="stat-lbl">대학 권장과목</div></div>
             <div className="stat"><div className="stat-num">AI</div><div className="stat-lbl">맞춤 설계</div></div>
             <div className="stat"><div className="stat-num">링크</div><div className="stat-lbl">결과 공유</div></div>
           </div>
-        </div>
-        <div>
-          <div className="intro-book"><svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" stroke="rgba(237,229,204,0.12)" strokeWidth="0.4"/><circle cx="50" cy="50" r="38" stroke="rgba(237,229,204,0.1)" strokeWidth="0.4"/><circle cx="50" cy="50" r="28" stroke="rgba(237,229,204,0.08)" strokeWidth="0.4"/><path d="M50 2 L50 98 M2 50 L98 50" stroke="rgba(237,229,204,0.07)" strokeWidth="0.25"/><path d="M15 15 L85 85 M85 15 L15 85" stroke="rgba(237,229,204,0.07)" strokeWidth="0.25"/><polygon points="50,5 93,27.5 93,72.5 50,95 7,72.5 7,27.5" stroke="rgba(237,229,204,0.09)" strokeWidth="0.4" fill="none"/></svg></div>
         </div>
       </section>
 
