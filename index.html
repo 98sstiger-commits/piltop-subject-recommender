@@ -88,7 +88,7 @@
     /* ── INTRO ── */
     .intro{
       background:radial-gradient(at center top,#12513a 0%,#0b3a2e 50%,#072519 100%);
-      padding:56px 72px;
+      padding:56px 72px 56px 96px;
       display:grid;
       grid-template-columns:55fr 45fr;
       gap:40px;
@@ -111,16 +111,16 @@
       background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none'%3E%3Cpath d='M100 22C62 22 32 37 32 37L32 168C32 168 62 156 100 156C138 156 168 168 168 168L168 37C168 37 138 22 100 22Z' stroke='rgba(237,229,204,0.12)' stroke-width='1.5' fill='rgba(237,229,204,0.03)'/%3E%3Cpath d='M100 22L100 156' stroke='rgba(237,229,204,0.12)' stroke-width='1.5'/%3E%3Cpath d='M48 50L95 50M48 63L92 63M48 76L90 76M48 89L88 89M48 102L85 102' stroke='rgba(237,229,204,0.08)' stroke-width='1'/%3E%3Cpath d='M105 50L152 50M108 63L152 63M110 76L152 76M112 89L152 89M115 102L152 102' stroke='rgba(237,229,204,0.08)' stroke-width='1'/%3E%3Ccircle cx='100' cy='135' r='10' stroke='rgba(237,229,204,0.08)' stroke-width='1' fill='none'/%3E%3C/svg%3E");
       background-size:contain;background-repeat:no-repeat;opacity:.9;pointer-events:none}
     .intro-ey{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.18em;text-transform:uppercase;margin-bottom:12px}
-    .intro-ttl{font-family:var(--fd);font-size:clamp(64px,8.5vw,120px);font-weight:900;color:#fff;line-height:1.0;letter-spacing:-3px;margin-bottom:10px}
+    .intro-ttl{font-family:var(--fd);font-size:clamp(52px,7vw,96px);font-weight:900;color:#fff;line-height:1.0;letter-spacing:-2.5px;margin-bottom:10px;padding-left:20px}
     .intro-tag{font-size:15px;color:rgba(237,229,204,.48);margin-bottom:14px;line-height:1.7}
     .intro-desc{font-size:15px;color:rgba(237,229,204,.58);line-height:1.9}
     .intro-desc strong{color:var(--cream)}
 
     /* 통계 — 이미지1 스타일 */
     .stats{display:flex;flex-direction:row;gap:36px;align-items:flex-end;justify-content:flex-start}
-    .stat{text-align:left}
-    .stat-num{font-family:var(--fd);font-size:clamp(40px,4.5vw,60px);font-weight:900;color:var(--gold);line-height:1;letter-spacing:-1px}
-    .stat-lbl{font-size:12px;color:rgba(237,229,204,.5);margin-top:6px;white-space:nowrap;letter-spacing:.03em;text-align:left}
+    .stat{text-align:center;display:flex;flex-direction:column;align-items:center}
+    .stat-num{font-family:var(--fd);font-size:clamp(32px,3.5vw,48px);font-weight:900;color:var(--gold);line-height:1;letter-spacing:-0.5px}
+    .stat-lbl{font-size:12px;color:rgba(237,229,204,.5);margin-top:6px;white-space:nowrap;letter-spacing:.03em;text-align:center}
 
     /* ── HOW ── */
     .how{padding:72px 72px 0;background:#fff}
