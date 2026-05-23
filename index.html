@@ -225,7 +225,7 @@
     .fp-submit{width:100%;padding:13px;background:var(--gold);border:none;border-radius:11px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:var(--fb);transition:background .2s}
     .fp-submit:hover:not(:disabled){background:var(--gold2)}
     .fp-submit:disabled{opacity:.35;cursor:not-allowed}
-    .fp-err{margin-top:10px;padding:10px 13px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#dc2626;font-size:13px;line-height:1.6}
+    .fp-err{margin-top:10px;padding:10px 13px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#dc2626;font-size:13px;line-height:1.6;white-space:pre-line}
     .fp-note{margin-top:10px;padding:8px 13px;background:rgba(200,162,48,.06);border:1px solid rgba(200,162,48,.18);border-radius:8px;font-size:12px;color:#7a6020;text-align:center}
 
     /* ── LOADING ── */
@@ -410,15 +410,24 @@ const makeShareUrl = (data) => {
 };
 
 const SYSTEM = `당신은 2022 개정 교육과정(고교학점제) 전문 과목추천 AI입니다.
-희망 대학이 있으면 웹 검색으로 해당 대학 최신 권장과목을 확인하세요.
+
+[최우선 규칙 — 대학·학과 존재 여부 검증]
+희망 대학이 입력된 경우, 반드시 웹 검색으로 아래 두 가지를 먼저 확인하라:
+1. 해당 대학에 해당 학과(전공)가 실제로 존재하는지
+2. 해당 대학의 해당 학과 권장과목이 무엇인지
+
+검색 결과에 따라 다음 JSON 형식 중 하나로만 반환하라:
+
+[CASE A] 대학에 해당 학과가 존재하지 않는 경우:
+{"error_type":"department_not_found","university":"대학명","major":"입력된 전공명","message":"검색 결과 해당 대학에 해당 학과가 없음을 설명하는 1~2문장","alternatives":["실제 존재하는 유사 학과명1","유사 학과명2"]}
+
+[CASE B] 대학 이름이 불명확하거나 검색 결과가 없는 경우:
+{"error_type":"university_not_found","university":"입력된 대학명","message":"해당 대학을 찾을 수 없다는 1문장"}
+
+[CASE C] 정상 — 대학·학과 모두 존재하는 경우 (또는 대학 미입력):
+{"overall_strategy":"전략 2~3문장","subjects":[...]}
+
 순수 JSON만 반환. 마크다운 없이.
-
-{"overall_strategy":"전략 2~3문장","subjects":[{"name":"과목명","category":"일반선택|진로선택|융합선택","priority":"필수|추천|선택","reason":"이유 2문장","extracurricular":["세특주제1","세특주제2"]}]}
-
-priority: 필수=대학공식권장·전공직결 / 추천=진로강력연계 / 선택=보완심화
-8~12개 (진로·전공 복잡도에 따라 유연하게): 필수2~4, 추천3~5, 선택1~3. 카테고리 고루.
-고1→고2~3 전체로드맵 / 고2→고3집중.
-
 [전공별 필수과목 규칙 — 반드시 필수에 포함]
 의학·치의학·한의학: 화학(일반선택), 생명과학(일반선택), 미적분Ⅱ(진로선택)
 약학·간호: 화학(일반선택), 생명과학(일반선택), 확률과 통계 또는 미적분Ⅱ
@@ -444,7 +453,6 @@ priority: 필수=대학공식권장·전공직결 / 추천=진로강력연계 / 
 체육·스포츠과학: 체육1(일반선택), 운동과 건강(진로선택), 스포츠 과학(융합선택)
 
 위 규칙에 해당하는 전공은 반드시 명시된 과목을 필수에 포함. 규칙에 없는 전공은 전공 특성에 맞게 추론.'
-
 과목(아래 목록 외 절대 사용 금지):
 국어일반:화법과 언어,독서와 작문,문학|국어진로:주제 탐구 독서,문학과 영상,직무 의사소통|국어융합:독서 토론과 글쓰기,매체 의사소통,언어생활 탐구
 수학일반:대수,미적분Ⅰ,확률과 통계|수학진로:미적분Ⅱ,기하,경제 수학,인공지능 수학,직업 수학|수학융합:수학과 문화,실용 통계,수학과제 탐구
@@ -651,8 +659,22 @@ function FormPage({onBack,onResult}){
       const jm=raw.match(/\{[\s\S]*\}/);
       if(!jm) throw new Error('결과 파싱 오류. 다시 시도해주세요.');
       clearInterval(t);
-      const results=JSON.parse(jm[0]);
-      onResult({results,form});
+      const parsed=JSON.parse(jm[0]);
+      // 대학·학과 존재 여부 오류 처리
+      if(parsed.error_type){
+        setLoading(false);
+        if(parsed.error_type==='department_not_found'){
+          let msg=`❌ ${parsed.university}에 '${parsed.major}' 학과가 존재하지 않습니다.\n\n${parsed.message}`;
+          if(parsed.alternatives&&parsed.alternatives.length>0) msg+=`\n\n💡 해당 대학 유사 학과: ${parsed.alternatives.join(', ')}`;
+          setError(msg);
+        } else {
+          setError(`❌ ${parsed.message||'대학 또는 학과를 찾을 수 없습니다.'}`);
+        }
+        return;
+      }
+      const results=parsed;
+      const encoded=encodeResult({form,results});
+      onResult({results,form,encoded});
     }catch(e){clearInterval(t);setError(`오류: ${String(e.message)}`);setLoading(false);}
   };
 
