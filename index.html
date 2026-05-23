@@ -6,24 +6,24 @@
   <title>큐리큘라 — 선택과목 AI 설계</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@700;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&display=swap" rel="stylesheet"/>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
-      --g1:#062010;   /* 유투북/수행비서 정확한 배경색 */
-      --g2:#0a2816;
-      --g3:#0d3020;
-      --g4:#030e06;
+      --g1:#022c22;   /* 유투북/수행비서 정확한 배경색 */
+      --g2:#033828;
+      --g3:#044030;
+      --g4:#011810;
       --cream:#ede5cc;
-      --gold:#c49a38;    /* 유투북 실제 골드 — 더 어둡고 앰버 */
-      --gold2:#d4ab48;
+      --gold:#c8a230;    /* 유투북 실제 골드 — 더 어둡고 앰버 */
+      --gold2:#d4ae40;
       --gd:rgba(196,154,56,0.7);
       --text:#1a1a1a;--muted:#6b6460;
       --dc:rgba(237,229,204,0.55);--db:rgba(237,229,204,0.1);
-      --fd:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+      --fd:'Noto Serif KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
       --fb:'Apple SD Gothic Neo','Malgun Gothic',-apple-system,sans-serif;
     }
     html{scroll-behavior:smooth}
@@ -31,28 +31,28 @@
 
     /* ── HERO — 유투북과 동일 ── */
     .l-hero{
-      background:var(--g1);min-height:100vh;
+      background:var(--g1);min-height:calc(100vh - 52px);
       display:flex;flex-direction:column;align-items:center;justify-content:center;
-      text-align:center;padding:60px 24px 80px;position:relative;overflow:hidden;
+      text-align:center;padding:80px 24px 80px;position:relative;overflow:hidden;
     }
     .l-hero::before{content:'';position:absolute;inset:0;
-      background:radial-gradient(ellipse 60% 55% at 50% 40%,rgba(15,60,30,0.6),transparent 65%);pointer-events:none}
+      background:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(16,185,129,0.15),transparent);pointer-events:none}
     /* 배지 — 유투북 스타일: 그린 계열 */
     .l-hero-badge{
       display:inline-flex;align-items:center;gap:8px;
-      background:rgba(255,255,255,0.06);
-      border:1px solid rgba(237,229,204,0.15);
+      background:rgba(2,60,35,0.6);
+      border:1px solid rgba(16,185,129,0.3);
       border-radius:999px;padding:6px 18px;
-      font-size:13px;color:rgba(237,229,204,0.62);
+      font-size:13px;color:rgba(237,229,204,0.75);
       margin-bottom:32px;position:relative;z-index:2;
     }
     /* 유투북은 그린 도트 */
-    .l-hero-dot{width:7px;height:7px;background:#4caf72;border-radius:50%;flex-shrink:0}
+    .l-hero-dot{width:7px;height:7px;background:#3ecb6a;border-radius:50%;flex-shrink:0}
     /* 제목 — 유투북과 동일한 크기/폰트 */
     .l-hero-title{
       font-family:var(--fd);
       font-size:clamp(48px,5.8vw,72px);
-      font-weight:900;color:var(--cream);
+      font-weight:900;color:var(--gold);
       line-height:1.05;letter-spacing:-1px;
       margin-bottom:44px;position:relative;z-index:2;
     }
@@ -68,8 +68,8 @@
 
     /* ── TUTORIAL NAV — 유투북과 동일: 크림 배경 ── */
     .l-tut-bar{
-      background:#f8f3e8;  /* 크림색, 흰색 아님 */
-      border-bottom:1px solid #e8e0cc;
+      background:#f5f0e4;  /* 크림색, 흰색 아님 */
+      border-bottom:1px solid #e5ddd0;
       padding:0 48px;height:50px;
       display:flex;align-items:center;justify-content:space-between;
       position:sticky;top:0;z-index:100;
@@ -82,7 +82,7 @@
     .l-tut-step-num{font-weight:700;color:#c8b878;margin-right:3px;font-size:11px}
 
     /* ── INTRO ── */
-    .l-intro{background:var(--g2);padding:80px 72px;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;position:relative;overflow:hidden}
+    .l-intro{background:#022c22;padding:80px 72px;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;position:relative;overflow:hidden}
     .l-intro::after{content:'';position:absolute;right:-60px;top:50%;transform:translateY(-50%);
       width:460px;height:460px;border:1px solid rgba(237,229,204,.04);border-radius:50%;
       box-shadow:0 0 0 60px rgba(237,229,204,.015),0 0 0 120px rgba(237,229,204,.01),0 0 0 200px rgba(237,229,204,.006);pointer-events:none}
@@ -161,7 +161,7 @@
     .l-why-text{font-size:13px;color:rgba(237,229,204,.6);line-height:1.75}
 
     /* ── CTA ── */
-    .l-cta{background:var(--g2);padding:80px 48px;text-align:center;position:relative;overflow:hidden}
+    .l-cta{background:#022c22;padding:80px 48px;text-align:center;position:relative;overflow:hidden}
     .l-cta::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 50% 80% at 50% 100%,rgba(15,55,25,.5),transparent);pointer-events:none}
     .l-cta-label{font-size:11px;font-weight:700;color:rgba(237,229,204,.3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px;position:relative;z-index:1}
     .l-cta-title{font-family:var(--fd);font-size:clamp(26px,4vw,42px);font-weight:900;color:var(--cream);letter-spacing:-1px;margin-bottom:12px;position:relative;z-index:1;line-height:1.2}
@@ -178,7 +178,7 @@
 
     /* ── FORM PAGE ── */
     .fp{min-height:100vh;background:var(--g1);display:flex;flex-direction:column}
-    .fp-top{background:var(--g2);padding:44px 48px 96px;text-align:center;position:relative;overflow:hidden}
+    .fp-top{background:#022c22;padding:44px 48px 96px;text-align:center;position:relative;overflow:hidden}
     .fp-top::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 50% 0%,rgba(15,55,25,.45),transparent);pointer-events:none}
     .fp-back-btn{position:absolute;top:20px;left:24px;background:none;border:none;color:rgba(237,229,204,.4);font-size:13px;cursor:pointer;font-family:var(--fb);z-index:10}
     .fp-back-btn:hover{color:var(--cream)}
@@ -220,7 +220,7 @@
 
     /* ── RESULTS ── */
     .rp{background:var(--g1);min-height:100vh;display:flex;flex-direction:column}
-    .rp-top-section{background:var(--g2);padding:36px 48px 88px;text-align:center;position:relative;overflow:hidden}
+    .rp-top-section{background:#022c22;padding:36px 48px 88px;text-align:center;position:relative;overflow:hidden}
     .rp-top-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 50% 0%,rgba(15,55,25,.45),transparent);pointer-events:none}
     .rp-home-btn{position:absolute;top:20px;left:24px;background:none;border:none;color:rgba(237,229,204,.4);font-size:13px;cursor:pointer;font-family:var(--fb);z-index:10}
     .rp-home-btn:hover{color:var(--cream)}
