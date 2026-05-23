@@ -31,9 +31,10 @@
 
     /* ── HERO — 유투북과 동일 ── */
     .l-hero{
-      background:var(--g1);min-height:calc(100vh - 52px);
+      background:var(--g1);
       display:flex;flex-direction:column;align-items:center;justify-content:center;
-      text-align:center;padding:80px 24px 80px;position:relative;overflow:hidden;
+      text-align:center;padding:60px 24px 60px;position:relative;overflow:hidden;
+      min-height:auto;height:calc(100vh - 52px);
     }
     .l-hero::before{content:'';position:absolute;inset:0;
       background:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(16,185,129,0.15),transparent);pointer-events:none}
@@ -55,9 +56,9 @@
     .l-hero-title{
       font-family:var(--fd);
       font-size:clamp(48px,5.8vw,72px);
-      font-weight:900;color:var(--gold);
+      font-weight:900;color:#ede5cc;
       line-height:1.05;letter-spacing:-1px;
-      margin-bottom:44px;position:relative;z-index:2;
+      margin-bottom:40px;position:relative;z-index:2;
     }
     .l-hero-btn{
       padding:18px 64px;background:#fff;border:none;border-radius:14px;
@@ -302,9 +303,9 @@
     /* ══ MOBILE (640px 이하) ══ */
     @media(max-width:640px){
       /* 히어로 */
-      .l-hero{min-height:calc(100svh - 52px);padding:48px 20px 60px}
+      .l-hero{height:auto;min-height:0;padding:80px 20px 80px}
       .l-hero::after{display:none}
-      .l-hero-title{font-size:clamp(42px,11vw,60px);margin-bottom:32px}
+      .l-hero-title{font-size:52px;letter-spacing:-1px;margin-bottom:28px}
       .l-hero-badge{font-size:12px;padding:5px 14px;margin-bottom:22px}
       .l-hero-btn{padding:15px 48px;font-size:16px}
 
