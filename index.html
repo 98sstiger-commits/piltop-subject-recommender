@@ -33,7 +33,8 @@
     .hero{
       background:var(--bg);
       height:calc(100vh - var(--tut-h));
-      min-height:400px;
+      max-height:560px;
+      min-height:340px;
       display:flex;flex-direction:column;
       align-items:center;justify-content:center;
       text-align:center;padding:40px 24px;
@@ -96,10 +97,10 @@
     .intro-desc strong{color:var(--cream)}
 
     /* 통계 — 이미지1 스타일 */
-    .stats{display:flex;gap:40px;flex-wrap:wrap}
+    .stats{display:flex;gap:32px;flex-wrap:wrap;align-items:flex-start}
     .stat{}
-    .stat-num{font-family:var(--fd);font-size:clamp(36px,4vw,52px);font-weight:900;color:var(--gold);line-height:1;letter-spacing:-1px}
-    .stat-lbl{font-size:12px;color:rgba(237,229,204,.42);margin-top:6px;white-space:nowrap;letter-spacing:.02em}
+    .stat-num{font-family:var(--fd);font-size:clamp(28px,3.2vw,42px);font-weight:900;color:var(--gold);line-height:1;letter-spacing:-1px}
+    .stat-lbl{font-size:11px;color:rgba(237,229,204,.45);margin-top:5px;white-space:nowrap;letter-spacing:.03em}
 
     /* ── HOW ── */
     .how{padding:72px 72px 0;background:#fff}
