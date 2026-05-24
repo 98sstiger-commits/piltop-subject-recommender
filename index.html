@@ -424,11 +424,36 @@ const saveResult = async (data) => {
   try {
     const res = await fetch(`${SB_URL}/rest/v1/piltop_data`, {
       method:'POST',
-      headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},
+      headers:{
+        'apikey':SB_KEY,
+        'Authorization':`Bearer ${SB_KEY}`,
+        'Content-Type':'application/json',
+        'Prefer':'return=minimal,resolution=ignore-duplicates'
+      },
       body:JSON.stringify({key, value:`${data.form.career} ${data.form.major}`, jsonb:data})
     });
-    if(!res.ok) return null;
-    return id;
+    if(res.ok||res.status===201||res.status===204) return id;
+    const errText=await res.text().catch(()=>'');
+    console.error('Supabase 저장 실패:', res.status, errText);
+    return null;
+  } catch(e) {
+    console.error('Supabase 네트워크 오류:', e);
+    return null;
+  }
+};
+
+// URL 압축 저장 (Supabase 실패 시 fallback)
+const makeFallbackUrl = (data) => {
+  try {
+    const minimal={f:data.form,s:(data.results.subjects||[]).map(s=>({n:s.name,p:s.priority,c:s.category,r:s.reason,e:s.extracurricular})),st:data.results.overall_strategy};
+    const enc=btoa(encodeURIComponent(JSON.stringify(minimal)));
+    return `${location.origin}${location.pathname}?d=${enc}`;
+  } catch { return null; }
+};
+const loadFallback=(enc)=>{
+  try {
+    const o=JSON.parse(decodeURIComponent(atob(enc)));
+    return {form:o.f,results:{overall_strategy:o.st,subjects:(o.s||[]).map(s=>({name:s.n,priority:s.p,category:s.c,reason:s.r,extracurricular:s.e}))}};
   } catch { return null; }
 };
 
@@ -760,9 +785,11 @@ function FormPage({onBack,onResult}){
         return;
       }
       const results=parsed;
-      // Supabase에 먼저 저장 후 shareId 전달
+      // Supabase 저장 시도
       const shareId=await saveResult({results,form});
-      onResult({results,form,shareId});
+      // 실패 시 fallback URL 방식
+      const fallbackUrl=shareId?null:makeFallbackUrl({results,form});
+      onResult({results,form,shareId,fallbackUrl});
     }catch(e){
       clearInterval(t);
       const msg=String(e.message);
@@ -842,7 +869,7 @@ function ResultsPage({results,form,shareId,onBack,isShared}){
   const 필수cnt=(results.subjects||[]).filter(s=>s.priority==='필수').length;
   const 추천cnt=(results.subjects||[]).filter(s=>s.priority==='추천').length;
 
-  const shareUrl=shareId?makeShareUrl(shareId):null;
+  const shareUrl=shareId?makeShareUrl(shareId):(isShared?null:location.href);
 
   const [copying,setCopying]=React.useState(false);
   const doCopy=async(url)=>{
@@ -862,12 +889,8 @@ function ResultsPage({results,form,shareId,onBack,isShared}){
     if(copying) return;
     setCopying(true);
     setToast('🔗 링크 생성 중...');
-    let url=shareUrl;
-    if(!url){
-      const id=await saveResult({results,form});
-      if(id) url=makeShareUrl(id);
-    }
-    if(!url){setToast('링크 생성 실패. 다시 시도해주세요.');setTimeout(()=>setToast(''),2500);setCopying(false);return;}
+    let url=shareUrl||location.href;
+    if(!url){setToast('링크 생성 실패.');setTimeout(()=>setToast(''),2500);setCopying(false);return;}
     await doCopy(url);
     setCopying(false);
   };
@@ -917,6 +940,7 @@ function App(){
   useEffect(()=>{
     const params=new URLSearchParams(location.search);
     const rid=params.get('r');
+    const did=params.get('d');
     if(rid){
       setLoading(true);
       loadResult(rid).then(d=>{
@@ -926,6 +950,13 @@ function App(){
         }
         setLoading(false);
       }).catch(()=>setLoading(false));
+    } else if(did){
+      // fallback URL 방식
+      const d=loadFallback(did);
+      if(d?.results&&d?.form){
+        setRdata({...d,isShared:true});
+        setPage('results');
+      }
     }
   },[]);
 
@@ -937,6 +968,7 @@ function App(){
     setRdata(d);
     setPage('results');
     if(d.shareId) history.pushState('','',makeShareUrl(d.shareId));
+    else if(d.fallbackUrl) history.pushState('','',d.fallbackUrl);
     window.scrollTo(0,0);
   };
 
