@@ -820,19 +820,32 @@ function ResultsPage({results,form,shareId,onBack,isShared}){
 
   const shareUrl=shareId?makeShareUrl(shareId):null;
 
-  const copy=()=>{
-    if(!shareUrl){setToast('링크 생성 중 오류가 발생했습니다.');setTimeout(()=>setToast(''),2500);return;}
-    navigator.clipboard.writeText(shareUrl).then(()=>{
-      setToast('✓ 링크가 복사되었습니다');setTimeout(()=>setToast(''),2500);
-    }).catch(()=>{
-      // 모바일 fallback
+  const [copying,setCopying]=React.useState(false);
+  const doCopy=async(url)=>{
+    try{
+      await navigator.clipboard.writeText(url);
+      setToast('✓ 링크가 복사되었습니다');
+    }catch{
       const ta=document.createElement('textarea');
-      ta.value=shareUrl;document.body.appendChild(ta);ta.select();
+      ta.value=url;document.body.appendChild(ta);ta.select();
       try{document.execCommand('copy');setToast('✓ 링크가 복사되었습니다');}
       catch{setToast('주소창에서 직접 복사해주세요');}
       document.body.removeChild(ta);
-      setTimeout(()=>setToast(''),2500);
-    });
+    }
+    setTimeout(()=>setToast(''),2500);
+  };
+  const copy=async()=>{
+    if(copying) return;
+    setCopying(true);
+    setToast('🔗 링크 생성 중...');
+    let url=shareUrl;
+    if(!url){
+      const id=await saveResult({results,form});
+      if(id) url=makeShareUrl(id);
+    }
+    if(!url){setToast('링크 생성 실패. 다시 시도해주세요.');setTimeout(()=>setToast(''),2500);setCopying(false);return;}
+    await doCopy(url);
+    setCopying(false);
   };
 
   return(
@@ -857,7 +870,7 @@ function ResultsPage({results,form,shareId,onBack,isShared}){
               {form.university&&<span className="chip">{form.university}</span>}
             </div>
             <div className="rp-btns">
-              {shareUrl&&!isShared&&<button className="rb-lnk" onClick={copy}>🔗 링크 복사</button>}
+              {!isShared&&<button className="rb-lnk" onClick={copy} disabled={copying}>{copying?'생성 중...':'🔗 링크 복사'}</button>}
               <button className="rb-pdf" onClick={printPage}>📄 PDF 저장</button>
               {!isShared&&<button className="rb-bk" onClick={onBack}>↩ 다시 입력</button>}
             </div>
