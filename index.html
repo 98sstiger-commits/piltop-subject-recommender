@@ -427,18 +427,21 @@ const makeId = () => Math.random().toString(36).substr(2,6).toUpperCase();
 
 // Supabase 저장 (날짜+전공 포함 키)
 const saveResult = async (data) => {
-  // 같은 조합이면 동일 key로 덮어쓰기
   const combo = `${data.form?.career||''}_${data.form?.major||''}_${data.form?.university||''}`.replace(/\s/g,'');
-  const id = btoa(encodeURIComponent(combo)).replace(/[^a-zA-Z0-9]/g,'').slice(0,12);
+  const id = btoa(unescape(encodeURIComponent(combo))).replace(/[^a-zA-Z0-9]/g,'').slice(0,12);
   const key = `curricula_${id}`;
   try {
+    // 기존 동일 key 먼저 삭제 (중복 방지)
+    await fetch(`${SB_URL}/rest/v1/piltop_data?key=eq.${encodeURIComponent(key)}`, {
+      method:'DELETE',
+      headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}
+    });
     const r = await fetch(`${SB_URL}/rest/v1/piltop_data`, {
       method: 'POST',
       headers: {'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},
       body: JSON.stringify({key, value:{...data, savedAt: new Date().toISOString()}})
     });
     if(r.status===201||r.status===200||r.status===204) {
-      // 30개 초과 시 오래된 것 삭제
       pruneOldResults();
       return id;
     }
@@ -928,8 +931,8 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
         return;
       }
       const results=parsed;
-      // Supabase 저장 시도 (성공 시 짧은 ID, 실패 시 폼 URL fallback)
-      const shareId=await saveResult({results,form});
+      // 히스토리 재실행이면 저장 안 함 (최초 시각·순서 고정)
+      const shareId=autoForm ? null : await saveResult({results,form});
       onResult({results,form,shareId});
     }catch(e){
       clearInterval(t);
