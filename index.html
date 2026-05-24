@@ -618,10 +618,11 @@ const goSec=id=>document.getElementById(id)?.scrollIntoView({behavior:'smooth'})
 
 function printPage(){
   const ua=navigator.userAgent;
-  if(/iPad|iPhone|iPod/.test(ua)){window.print();}
-  else if(/Android/.test(ua)){
-    alert('PDF 저장 방법:\n브라우저 메뉴(⋮) → 인쇄 → PDF로 저장');
-  } else {window.print();}
+  if(/Android/.test(ua)){
+    alert('PDF 저장 방법\n\n① 화면 상단 주소창 옆 메뉴(⋮) 터치\n② 인쇄 선택\n③ PDF로 저장');
+  } else {
+    window.print();
+  }
 }
 
 function Landing({onStart}){
