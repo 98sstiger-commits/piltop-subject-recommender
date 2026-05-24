@@ -859,7 +859,7 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
   const set=k=>e=>setForm(p=>({...p,[k]:e.target.value}));
   const valid=form.career.trim()&&form.major.trim();
   // 공유 링크로 접근 시 자동 제출
-  useEffect(()=>{ if(autoForm&&valid) submit(); },[]);
+  useEffect(()=>{ if(autoForm&&autoForm.career&&autoForm.major) submit(); },[]);
 
   const submit=async()=>{
     setLoading(true);setError(null);setLstep(0);
@@ -1114,7 +1114,7 @@ function App(){
   if(page==='landing') return <Landing onStart={goForm}/>;
   if(page==='history') return <HistoryPage onBack={goHome} onSelect={d=>{setAutoForm(d.form);setSharedMode(false);setPage('form');window.scrollTo(0,0);}}/>;
   if(page==='form') return <FormPage onBack={goHome} onResult={goResult} autoForm={autoForm} onHistory={()=>{setPage('history');window.scrollTo(0,0);}}/>;
-  if(page==='results'&&rdata) return <ResultsPage results={rdata.results} form={rdata.form} shareId={rdata.shareId} onBack={()=>{setPage('form');history.pushState('','',location.pathname);}} onHome={goHome} isShared={rdata.isShared}/>;
+  if(page==='results'&&rdata) return <ResultsPage results={rdata.results} form={rdata.form} shareId={rdata.shareId} onBack={()=>{setAutoForm(null);setSharedMode(false);setPage('form');history.pushState('','',location.pathname);}} onHome={goHome} isShared={rdata.isShared}/>;
   return null;
 }
 
