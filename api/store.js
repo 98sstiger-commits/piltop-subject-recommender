@@ -13,13 +13,16 @@ export default async function handler(req, res) {
     const id = Math.random().toString(36).substr(2, 6).toUpperCase();
     const key = `curricula_${id}`;
 
+    // piltop_data 테이블 구조 확인용 로그
+    console.log('저장 시도:', key);
+
     const r = await fetch(`${SB_URL}/rest/v1/piltop_data`, {
       method: 'POST',
       headers: {
         'apikey': SB_KEY,
         'Authorization': `Bearer ${SB_KEY}`,
         'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
+        'Prefer': 'return=representation'
       },
       body: JSON.stringify({
         key,
@@ -28,10 +31,11 @@ export default async function handler(req, res) {
       })
     });
 
+    const responseText = await r.text();
+    console.log('Supabase 응답:', r.status, responseText.substring(0, 200));
+
     if (!r.ok) {
-      const errText = await r.text().catch(() => '');
-      console.error('Supabase error:', r.status, errText);
-      return res.status(500).json({ error: `Supabase ${r.status}: ${errText}` });
+      return res.status(500).json({ error: `Supabase ${r.status}: ${responseText}` });
     }
 
     return res.status(200).json({ id });
