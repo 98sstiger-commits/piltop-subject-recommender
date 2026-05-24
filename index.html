@@ -466,6 +466,21 @@ const listResults = async () => {
   } catch(e) { return []; }
 };
 
+// 히스토리 재실행 시 공유용 임시 저장 (랜덤 key)
+const saveResultTemp = async (data) => {
+  const id = makeId();
+  const key = `curricula_share_${id}`;
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/piltop_data`, {
+      method: 'POST',
+      headers: {'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body: JSON.stringify({key, value:{...data, savedAt: new Date().toISOString()}})
+    });
+    if(r.status===201||r.status===200||r.status===204) return id;
+    return null;
+  } catch(e) { return null; }
+};
+
 // 30개 초과 시 오래된 것 삭제
 const pruneOldResults = async () => {
   try {
@@ -511,7 +526,9 @@ const loadFallback=(enc)=>{
 // Supabase에서 결과 불러오기
 const loadResult = async (id) => {
   try {
-    const res = await fetch(`${SB_URL}/rest/v1/piltop_data?key=eq.curricula_${id}&select=value`, {
+    // id가 share_로 시작하면 curricula_share_ID, 아니면 curricula_ID
+    const fullKey = id.startsWith('share_') ? `curricula_${id}` : `curricula_${id}`;
+    const res = await fetch(`${SB_URL}/rest/v1/piltop_data?key=eq.${encodeURIComponent(fullKey)}&select=value`, {
       headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}
     });
     const data = await res.json();
@@ -931,8 +948,10 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
         return;
       }
       const results=parsed;
-      // 히스토리 재실행이면 저장 안 함 (최초 시각·순서 고정)
-      const shareId=autoForm ? null : await saveResult({results,form});
+      // 히스토리 재실행이면 임시 키로 저장 (공유링크용, 히스토리 순서는 고정)
+      const shareId=autoForm
+        ? await saveResultTemp({results,form})
+        : await saveResult({results,form});
       onResult({results,form,shareId});
     }catch(e){
       clearInterval(t);
