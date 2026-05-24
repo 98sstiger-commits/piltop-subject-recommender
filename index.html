@@ -486,7 +486,7 @@ const SYSTEM = `당신은 2022 개정 교육과정(고교학점제) 선택과목
 등급미산출: 예술(음악·미술·연극), 체육, 교양, 과학탐구실험
 5등급 상대평가: 그 외 일반선택·진로선택
 
-순수 JSON만 반환. 마크다운 없이. 웹검색 인용태그(<cite>) 절대 포함 금지. JSON 문자열 내 줄바꿈 금지.`;
+순수 JSON만 반환. 마크다운 없이. HTML태그·cite태그 절대 금지. JSON 문자열 내 줄바꿈 금지. reason은 2문장 이내로 간결하게.`;
 
 const LSTEPS=['진로·전공 분석','대학·학과 실시간 검색','2022 개정 과목 매칭','세특 탐구 주제 생성'];
 const PMETA={필수:{desc:'대학 권장 · 전공 직결'},추천:{desc:'진로 강력 연계'},선택:{desc:'보완 · 심화'}};
@@ -672,7 +672,7 @@ function FormPage({onBack,onResult}){
     const msg=`희망진로:${form.career}, 희망전공:${form.major}${form.university?`, 희망대학:${form.university}`:''}`;
     try{
       const res=await fetch('/api/proxy',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2000,system:SYSTEM,
+        body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:4000,system:SYSTEM,
           tools:[{type:'web_search_20250305',name:'web_search'}],
           messages:[{role:'user',content:msg}]})});
       const data=await res.json();
