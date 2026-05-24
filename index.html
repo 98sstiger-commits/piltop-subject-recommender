@@ -486,7 +486,7 @@ const SYSTEM = `당신은 2022 개정 교육과정(고교학점제) 선택과목
 등급미산출: 예술(음악·미술·연극), 체육, 교양, 과학탐구실험
 5등급 상대평가: 그 외 일반선택·진로선택
 
-순수 JSON만 반환. 마크다운 없이.`;
+순수 JSON만 반환. 마크다운 없이. 웹검색 인용태그(<cite>) 절대 포함 금지. JSON 문자열 내 줄바꿈 금지.`;
 
 const LSTEPS=['진로·전공 분석','대학·학과 실시간 검색','2022 개정 과목 매칭','세특 탐구 주제 생성'];
 const PMETA={필수:{desc:'대학 권장 · 전공 직결'},추천:{desc:'진로 강력 연계'},선택:{desc:'보완 · 심화'}};
@@ -679,10 +679,22 @@ function FormPage({onBack,onResult}){
       if(!res.ok) throw new Error(data?.error?.message||data?.error||`오류 ${res.status}`);
       const raw=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text||'').join('');
       if(!raw) throw new Error('응답을 받지 못했습니다. 다시 시도해주세요.');
-      const jm=raw.match(/\{[\s\S]*\}/);
+      // 웹검색 cite 태그 및 오염 문자 제거
+      const cleaned=raw
+        .replace(/<cite[^>]*>/g,'')
+        .replace(/<\/cite>/g,'')
+        .replace(/[\u0000-\u001F\u007F]/g,' ')
+        .replace(/\r/g,'');
+      const jm=cleaned.match(/\{[\s\S]*\}/);
       if(!jm) throw new Error('결과 파싱 오류. 다시 시도해주세요.');
       clearInterval(t);
-      const parsed=JSON.parse(jm[0]);
+      let parsed;
+      try{ parsed=JSON.parse(jm[0]); }
+      catch(pe){
+        // JSON 내 줄바꿈/따옴표 문제 추가 정리 후 재시도
+        const fixed=jm[0].replace(/([^\\])\n/g,'$1 ').replace(/([^\\])\t/g,'$1 ');
+        parsed=JSON.parse(fixed);
+      }
       // 대학·학과 존재 여부 오류 처리
       if(parsed.error_type){
         setLoading(false);
