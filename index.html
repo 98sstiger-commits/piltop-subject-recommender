@@ -363,7 +363,7 @@
       .rp-stat{padding:11px 8px;border-radius:9px}
       .rp-sn{font-size:22px}
       .rp-sl{font-size:10px}
-      .rp-wrap{padding:0 12px 44px;margin-top:-40px}
+      .rp-wrap{padding:0 16px 44px;margin-top:-40px}
       .rp-card{padding:16px 14px;border-radius:14px}
       .rp-top2{flex-direction:column;align-items:flex-start}
       .rp-btns{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:7px}
@@ -679,22 +679,29 @@ function FormPage({onBack,onResult}){
       if(!res.ok) throw new Error(data?.error?.message||data?.error||`오류 ${res.status}`);
       const raw=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text||'').join('');
       if(!raw) throw new Error('응답을 받지 못했습니다. 다시 시도해주세요.');
-      // 웹검색 cite 태그 및 오염 문자 제거
-      const cleaned=raw
-        .replace(/<cite[^>]*>/g,'')
-        .replace(/<\/cite>/g,'')
-        .replace(/[\u0000-\u001F\u007F]/g,' ')
-        .replace(/\r/g,'');
-      const jm=cleaned.match(/\{[\s\S]*\}/);
-      if(!jm) throw new Error('결과 파싱 오류. 다시 시도해주세요.');
-      clearInterval(t);
-      let parsed;
-      try{ parsed=JSON.parse(jm[0]); }
-      catch(pe){
-        // JSON 내 줄바꿈/따옴표 문제 추가 정리 후 재시도
-        const fixed=jm[0].replace(/([^\\])\n/g,'$1 ').replace(/([^\\])\t/g,'$1 ');
-        parsed=JSON.parse(fixed);
+      // 1단계: HTML 태그 전체 제거 (cite 포함)
+      const cleaned=raw.replace(/<[^>]+>/g,'').replace(/\r/g,'');
+      // 2단계: { } 괄호 깊이 추적으로 JSON 추출 (가장 외곽 객체)
+      let jsonStr='', depth=0, started=false;
+      for(let i=0;i<cleaned.length;i++){
+        const c=cleaned[i];
+        if(c==='{'){if(!started){started=true;}depth++;}
+        if(started){jsonStr+=c;}
+        if(c==='}'){depth--;if(depth===0&&started)break;}
       }
+      if(!jsonStr) throw new Error('결과 파싱 오류. 다시 시도해주세요.');
+      clearInterval(t);
+      // 3단계: 단계별 파싱 시도
+      let parsed;
+      const attempts=[
+        ()=>JSON.parse(jsonStr),
+        ()=>JSON.parse(jsonStr.replace(/\n/g,' ').replace(/\t/g,' ')),
+        ()=>JSON.parse(jsonStr.replace(/[\u0000-\u001F]/g,' ')),
+        ()=>JSON.parse(jsonStr.replace(/[\u0000-\u001F]/g,' ').replace(/\n/g,' ')),
+      ];
+      let lastErr;
+      for(const fn of attempts){try{parsed=fn();break;}catch(e){lastErr=e;}}
+      if(!parsed) throw new Error('JSON 파싱 실패: '+lastErr.message);
       // 대학·학과 존재 여부 오류 처리
       if(parsed.error_type){
         setLoading(false);
@@ -741,11 +748,11 @@ function FormPage({onBack,onResult}){
         <div className="fp-logo" onClick={onBack}><em>큐리큘라</em></div>
         <div className="fp-ey">SUBJECT RECOMMENDER</div>
         <h1 className="fp-ttl">큐리큘라</h1>
-        <p className="fp-sub">진로 맞춤 선택과목 AI 설계</p>
+        <p className="fp-sub">진로 · 전공을 입력하면 AI가 선택과목을 설계합니다</p>
       </div>
       <div className="fp-wrap">
         <div className="fp-card">
-          <div className="fp-ctitle">학년 · 진로 · 전공을 입력해주세요</div>
+          <div className="fp-ctitle">진로 · 전공을 입력해주세요</div>
           <div className="fp-row" style={{gridTemplateColumns:'1fr 1fr'}}>
             <div className="fp-grp"><label className="fp-lbl">희망 진로<span className="req">*</span></label><input className="fp-ctrl" placeholder="예: 의사, 소프트웨어 엔지니어…" value={form.career} onChange={set('career')}/></div>
             <div className="fp-grp"><label className="fp-lbl">희망 전공<span className="req">*</span></label><input className="fp-ctrl" placeholder="예: 의학과, 컴퓨터공학과…" value={form.major} onChange={set('major')}/></div>
