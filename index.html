@@ -427,7 +427,9 @@ const makeId = () => Math.random().toString(36).substr(2,6).toUpperCase();
 
 // Supabase 저장 (날짜+전공 포함 키)
 const saveResult = async (data) => {
-  const id = makeId();
+  // 같은 조합이면 동일 key로 덮어쓰기
+  const combo = `${data.form?.career||''}_${data.form?.major||''}_${data.form?.university||''}`.replace(/\s/g,'');
+  const id = btoa(encodeURIComponent(combo)).replace(/[^a-zA-Z0-9]/g,'').slice(0,12);
   const key = `curricula_${id}`;
   try {
     const r = await fetch(`${SB_URL}/rest/v1/piltop_data`, {
