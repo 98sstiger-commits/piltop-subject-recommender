@@ -464,6 +464,14 @@ const loadResult = async (id) => {
   } catch { return null; }
 };
 
+// 폼 데이터만 파라미터로 → 짧은 URL
+const makeFormShareUrl = (form) => {
+  const p = new URLSearchParams();
+  if(form.career) p.set('c', form.career);
+  if(form.major) p.set('m', form.major);
+  if(form.university) p.set('u', form.university);
+  return `${location.origin}${location.pathname}?${p.toString()}`;
+};
 const makeShareUrl = (id) => `${location.origin}${location.pathname}?r=${id}`;
 
 const SYSTEM = `당신은 2022 개정 교육과정(고교학점제) 선택과목 추천 전문 AI입니다.
@@ -724,13 +732,15 @@ function Landing({onStart}){
   );
 }
 
-function FormPage({onBack,onResult}){
-  const [form,setForm]=useState({career:'',major:'',university:''});
+function FormPage({onBack,onResult,autoForm}){
+  const [form,setForm]=useState(autoForm||{career:'',major:'',university:''});
   const [error,setError]=useState(null);
   const [loading,setLoading]=useState(false);
   const [lstep,setLstep]=useState(0);
   const set=k=>e=>setForm(p=>({...p,[k]:e.target.value}));
   const valid=form.career.trim()&&form.major.trim();
+  // 공유 링크로 접근 시 자동 제출
+  useEffect(()=>{ if(autoForm&&valid) submit(); },[]);
 
   const submit=async()=>{
     setLoading(true);setError(null);setLstep(0);
@@ -781,11 +791,9 @@ function FormPage({onBack,onResult}){
         return;
       }
       const results=parsed;
-      // Supabase 저장 시도
+      // Supabase 저장 시도 (성공 시 짧은 ID, 실패 시 폼 URL fallback)
       const shareId=await saveResult({results,form});
-      // 실패 시 fallback URL 방식
-      const fallbackUrl=shareId?null:makeFallbackUrl({results,form});
-      onResult({results,form,shareId,fallbackUrl});
+      onResult({results,form,shareId});
     }catch(e){
       clearInterval(t);
       const msg=String(e.message);
@@ -871,7 +879,7 @@ function ResultsPage({results,form,shareId,onBack,isShared}){
   const copy=async()=>{
     if(copying) return;
     setCopying(true);
-    const url=shareUrl||location.href;
+    const url=shareUrl||makeFormShareUrl(form)||location.href;
     try{
       await navigator.clipboard.writeText(url);
       setToast('✓ 링크가 복사되었습니다. 카카오톡에 붙여넣기 하세요!');
@@ -927,6 +935,7 @@ function App(){
   const [page,setPage]=useState('landing');
   const [rdata,setRdata]=useState(null);
   const [loading,setLoading]=useState(false);
+  const [autoForm,setAutoForm]=useState(null);
 
   useEffect(()=>{
     const params=new URLSearchParams(location.search);
@@ -941,8 +950,12 @@ function App(){
         }
         setLoading(false);
       }).catch(()=>setLoading(false));
+    } else if(params.get('c')||params.get('m')){
+      // 폼 파라미터 자동 제출 방식 (짧은 URL)
+      const form={career:params.get('c')||'',major:params.get('m')||'',university:params.get('u')||''};
+      setAutoForm(form);
+      setPage('form');
     } else if(did){
-      // fallback URL 방식
       const d=loadFallback(did);
       if(d?.results&&d?.form){
         setRdata({...d,isShared:true});
@@ -958,13 +971,13 @@ function App(){
   const goResult=(d)=>{
     setRdata(d);
     setPage('results');
-    if(d.shareId) history.pushState('','',makeShareUrl(d.shareId));
-    else if(d.fallbackUrl) history.pushState('','',d.fallbackUrl);
+    const url=d.shareId?makeShareUrl(d.shareId):makeFormShareUrl(d.form);
+    if(url) history.pushState('','',url);
     window.scrollTo(0,0);
   };
 
   if(page==='landing') return <Landing onStart={goForm}/>;
-  if(page==='form') return <FormPage onBack={goHome} onResult={goResult}/>;
+  if(page==='form') return <FormPage onBack={goHome} onResult={goResult} autoForm={autoForm}/>;
   if(page==='results'&&rdata) return <ResultsPage results={rdata.results} form={rdata.form} shareId={rdata.shareId} onBack={()=>{setPage('form');history.pushState('','',location.pathname);}} isShared={rdata.isShared}/>;
   return null;
 }
