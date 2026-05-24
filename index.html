@@ -432,12 +432,12 @@ const saveResult = async (data) => {
         'apikey': SB_KEY,
         'Authorization': `Bearer ${SB_KEY}`,
         'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
+        'Prefer': 'return=minimal,resolution=merge-duplicates'
       },
-      body: JSON.stringify({key, value:`${data.form?.career||''} ${data.form?.major||''}`.trim(), jsonb:data})
+      body: JSON.stringify({key, value:data})
     });
     console.log('Supabase 저장 결과:', r.status);
-    if(r.status===201||r.status===200||r.status===204) return id;
+    if(r.status===201||r.status===200||r.status===204||r.status===409) return id;
     const t = await r.text();
     console.error('Supabase 오류:', r.status, t);
     return null;
@@ -466,7 +466,7 @@ const loadResult = async (id) => {
       headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}
     });
     const data = await res.json();
-    return data?.[0]?.jsonb || null;
+    return data?.[0]?.value || null;
   } catch { return null; }
 };
 
