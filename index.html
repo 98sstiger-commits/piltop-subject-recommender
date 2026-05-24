@@ -4,6 +4,10 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>큐리큘라 — 선택과목 AI 설계</title>
+  <meta property="og:title" content="큐리큘라 — 선택과목 AI 설계"/>
+  <meta property="og:description" content="진로·전공을 입력하면 AI가 2022 개정 교육과정 선택과목을 설계합니다"/>
+  <meta property="og:url" content="https://piltop-subject-recommender.vercel.app"/>
+  <meta property="og:type" content="website"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&display=swap" rel="stylesheet"/>
@@ -872,7 +876,24 @@ function ResultsPage({results,form,shareId,onBack,isShared}){
   const shareUrl=shareId?makeShareUrl(shareId):(isShared?null:location.href);
 
   const [copying,setCopying]=React.useState(false);
-  const doCopy=async(url)=>{
+  const copy=async()=>{
+    if(copying) return;
+    setCopying(true);
+    const url=shareUrl||location.href;
+    const title=`${form.major} 선택과목 추천`;
+    const text=`큐리큘라 — ${form.career} · ${form.major} 선택과목 추천 결과\n필탑학원`;
+    // 모바일: 네이티브 공유 시트 (카카오톡 직접 전송 가능)
+    if(navigator.share){
+      try{
+        await navigator.share({title, text, url});
+        setCopying(false);
+        return;
+      }catch(e){
+        if(e.name==='AbortError'){setCopying(false);return;}
+        // 공유 실패 시 클립보드로 fallback
+      }
+    }
+    // 데스크탑: 클립보드 복사
     try{
       await navigator.clipboard.writeText(url);
       setToast('✓ 링크가 복사되었습니다');
@@ -884,14 +905,6 @@ function ResultsPage({results,form,shareId,onBack,isShared}){
       document.body.removeChild(ta);
     }
     setTimeout(()=>setToast(''),2500);
-  };
-  const copy=async()=>{
-    if(copying) return;
-    setCopying(true);
-    setToast('🔗 링크 생성 중...');
-    let url=shareUrl||location.href;
-    if(!url){setToast('링크 생성 실패.');setTimeout(()=>setToast(''),2500);setCopying(false);return;}
-    await doCopy(url);
     setCopying(false);
   };
 
@@ -917,7 +930,7 @@ function ResultsPage({results,form,shareId,onBack,isShared}){
               {form.university&&<span className="chip">{form.university}</span>}
             </div>
             <div className="rp-btns">
-              {!isShared&&<button className="rb-lnk" onClick={copy} disabled={copying}>{copying?'생성 중...':'🔗 링크 복사'}</button>}
+              {!isShared&&<button className="rb-lnk" onClick={copy} disabled={copying}>{copying?'생성 중...':`📤 ${form.major} 결과 공유`}</button>}
               <button className="rb-pdf" onClick={printPage}>📄 PDF 저장</button>
               {!isShared&&<button className="rb-bk" onClick={onBack}>↩ 다시 입력</button>}
             </div>
