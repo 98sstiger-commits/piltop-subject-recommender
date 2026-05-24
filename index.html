@@ -424,9 +424,7 @@ const makeId = () => Math.random().toString(36).substr(2,6).toUpperCase();
 // Supabase 저장 (날짜+전공 포함 키)
 const saveResult = async (data) => {
   const id = makeId();
-  const date = new Date().toISOString().slice(0,10).replace(/-/g,'');
-  const major = (data.form?.major||'').slice(0,6);
-  const key = `curricula_${date}_${major}_${id}`;
+  const key = `curricula_${id}`;
   try {
     const r = await fetch(`${SB_URL}/rest/v1/piltop_data`, {
       method: 'POST',
