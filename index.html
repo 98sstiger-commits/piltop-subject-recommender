@@ -421,27 +421,19 @@ const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 // 짧은 6자리 ID 생성
 const makeId = () => Math.random().toString(36).substr(2,6).toUpperCase();
 
-// Supabase에 결과 저장 → 짧은 ID 반환
+// /api/store 서버 경유로 저장 → 짧은 ID 반환
 const saveResult = async (data) => {
-  const id = makeId();
-  const key = `curricula_${id}`;
   try {
-    const res = await fetch(`${SB_URL}/rest/v1/piltop_data`, {
-      method:'POST',
-      headers:{
-        'apikey':SB_KEY,
-        'Authorization':`Bearer ${SB_KEY}`,
-        'Content-Type':'application/json',
-        'Prefer':'return=minimal,resolution=ignore-duplicates'
-      },
-      body:JSON.stringify({key, value:`${data.form.career} ${data.form.major}`, jsonb:data})
+    const res = await fetch('/api/store', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data)
     });
-    if(res.ok||res.status===201||res.status===204) return id;
-    const errText=await res.text().catch(()=>'');
-    console.error('Supabase 저장 실패:', res.status, errText);
-    return null;
+    const json = await res.json();
+    if (!res.ok || !json.id) { console.error('store 실패:', json); return null; }
+    return json.id;
   } catch(e) {
-    console.error('Supabase 네트워크 오류:', e);
+    console.error('store 오류:', e);
     return null;
   }
 };
@@ -880,31 +872,17 @@ function ResultsPage({results,form,shareId,onBack,isShared}){
     if(copying) return;
     setCopying(true);
     const url=shareUrl||location.href;
-    const title=`${form.major} 선택과목 추천`;
-    const text=`큐리큘라 — ${form.career} · ${form.major} 선택과목 추천 결과\n필탑학원`;
-    // 모바일: 네이티브 공유 시트 (카카오톡 직접 전송 가능)
-    if(navigator.share){
-      try{
-        await navigator.share({title, text, url});
-        setCopying(false);
-        return;
-      }catch(e){
-        if(e.name==='AbortError'){setCopying(false);return;}
-        // 공유 실패 시 클립보드로 fallback
-      }
-    }
-    // 데스크탑: 클립보드 복사
     try{
       await navigator.clipboard.writeText(url);
-      setToast('✓ 링크가 복사되었습니다');
+      setToast('✓ 링크가 복사되었습니다. 카카오톡에 붙여넣기 하세요!');
     }catch{
       const ta=document.createElement('textarea');
       ta.value=url;document.body.appendChild(ta);ta.select();
-      try{document.execCommand('copy');setToast('✓ 링크가 복사되었습니다');}
-      catch{setToast('주소창에서 직접 복사해주세요');}
+      try{document.execCommand('copy');setToast('✓ 링크 복사 완료!');}
+      catch{setToast('주소창 URL을 직접 복사해주세요');}
       document.body.removeChild(ta);
     }
-    setTimeout(()=>setToast(''),2500);
+    setTimeout(()=>setToast(''),3000);
     setCopying(false);
   };
 
@@ -930,7 +908,7 @@ function ResultsPage({results,form,shareId,onBack,isShared}){
               {form.university&&<span className="chip">{form.university}</span>}
             </div>
             <div className="rp-btns">
-              {!isShared&&<button className="rb-lnk" onClick={copy} disabled={copying}>{copying?'생성 중...':`📤 ${form.major} 결과 공유`}</button>}
+              {!isShared&&<button className="rb-lnk" onClick={copy} disabled={copying}>{copying?'생성 중...':'🔗 링크 복사'}</button>}
               <button className="rb-pdf" onClick={printPage}>📄 PDF 저장</button>
               {!isShared&&<button className="rb-bk" onClick={onBack}>↩ 다시 입력</button>}
             </div>
