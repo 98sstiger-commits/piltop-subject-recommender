@@ -981,7 +981,7 @@ function PSection({priority,subjects}){
   );
 }
 
-function ResultsPage({results,form,shareId,onBack,isShared}){
+function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
   const [toast,setToast]=useState('');
   const total=(results.subjects||[]).length;
   const 필수cnt=(results.subjects||[]).filter(s=>s.priority==='필수').length;
@@ -1011,7 +1011,7 @@ function ResultsPage({results,form,shareId,onBack,isShared}){
   return(
     <div className="rp">
       <div className="rp-top">
-        {!isShared&&<button className="rp-home" onClick={onBack}>← 다시 입력</button>}
+        {!isShared&&<button className="rp-home" onClick={()=>{history.pushState('','',location.pathname);onHome();}}>← 처음으로</button>}
         <div className="rp-ey">SUBJECT RECOMMENDER</div>
         <div className="rp-hd">큐리큘라</div>
         <div className="rp-hds">맞춤 과목 추천 결과</div>
@@ -1104,7 +1104,7 @@ function App(){
   if(page==='landing') return <Landing onStart={goForm}/>;
   if(page==='history') return <HistoryPage onBack={goHome} onSelect={d=>{setAutoForm(d.form);setSharedMode(false);setPage('form');window.scrollTo(0,0);}}/>;
   if(page==='form') return <FormPage onBack={goHome} onResult={goResult} autoForm={autoForm} onHistory={()=>{setPage('history');window.scrollTo(0,0);}}/>;
-  if(page==='results'&&rdata) return <ResultsPage results={rdata.results} form={rdata.form} shareId={rdata.shareId} onBack={()=>{setPage('form');history.pushState('','',location.pathname);}} isShared={rdata.isShared}/>;
+  if(page==='results'&&rdata) return <ResultsPage results={rdata.results} form={rdata.form} shareId={rdata.shareId} onBack={()=>{setPage('form');history.pushState('','',location.pathname);}} onHome={goHome} isShared={rdata.isShared}/>;
   return null;
 }
 
