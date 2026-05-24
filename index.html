@@ -936,6 +936,7 @@ function App(){
   const [rdata,setRdata]=useState(null);
   const [loading,setLoading]=useState(false);
   const [autoForm,setAutoForm]=useState(null);
+  const [sharedMode,setSharedMode]=useState(false);
 
   useEffect(()=>{
     const params=new URLSearchParams(location.search);
@@ -951,9 +952,9 @@ function App(){
         setLoading(false);
       }).catch(()=>setLoading(false));
     } else if(params.get('c')||params.get('m')){
-      // 폼 파라미터 자동 제출 방식 (짧은 URL)
       const form={career:params.get('c')||'',major:params.get('m')||'',university:params.get('u')||''};
       setAutoForm(form);
+      setSharedMode(true);
       setPage('form');
     } else if(did){
       const d=loadFallback(did);
@@ -969,10 +970,12 @@ function App(){
   const goForm=()=>{setPage('form');window.scrollTo(0,0);};
   const goHome=()=>{setPage('landing');window.scrollTo(0,0);history.pushState('','',location.pathname);};
   const goResult=(d)=>{
-    setRdata(d);
+    setRdata({...d,isShared:sharedMode});
     setPage('results');
-    const url=d.shareId?makeShareUrl(d.shareId):makeFormShareUrl(d.form);
-    if(url) history.pushState('','',url);
+    if(!sharedMode){
+      const url=d.shareId?makeShareUrl(d.shareId):makeFormShareUrl(d.form);
+      if(url) history.pushState('','',url);
+    }
     window.scrollTo(0,0);
   };
 
