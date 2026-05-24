@@ -861,14 +861,14 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
   const [loading,setLoading]=useState(false);
   const [lstep,setLstep]=useState(0);
   const set=k=>e=>setForm(p=>({...p,[k]:e.target.value}));
-  const valid=form.career.trim()&&form.major.trim();
+  const valid=form.major.trim();
   // 공유 링크로 접근 시 자동 제출
   useEffect(()=>{ if(autoForm&&autoForm.career&&autoForm.major) submit(); },[]);
 
   const submit=async()=>{
     setLoading(true);setError(null);setLstep(0);
     const t=setInterval(()=>setLstep(s=>s<LSTEPS.length-1?s+1:s),3500);
-    const msg=`희망진로:${form.career}, 희망전공:${form.major}${form.university?`, 희망대학:${form.university}`:''}`;
+    const msg=`${form.career?`희망진로:${form.career}, `:''}희망전공:${form.major}${form.university?`, 희망대학:${form.university}`:''}`;
     try{
       const res=await fetch('/api/proxy',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:4000,system:SYSTEM,
@@ -961,7 +961,7 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
         <div className="fp-card">
           <div className="fp-ctitle">진로 · 전공을 입력해주세요</div>
           <div className="fp-row" style={{gridTemplateColumns:'1fr 1fr'}}>
-            <div className="fp-grp"><label className="fp-lbl">희망 진로<span className="req">*</span></label><input className="fp-ctrl" placeholder="예: 의사, 소프트웨어 엔지니어…" value={form.career} onChange={set('career')}/></div>
+            <div className="fp-grp"><label className="fp-lbl">희망 진로 <span style={{color:"#bbb",fontWeight:400}}>선택</span></label><input className="fp-ctrl" placeholder="예: 의사, 소프트웨어 엔지니어…" value={form.career} onChange={set('career')}/></div>
             <div className="fp-grp"><label className="fp-lbl">희망 전공<span className="req">*</span></label><input className="fp-ctrl" placeholder="예: 의학과, 컴퓨터공학과…" value={form.major} onChange={set('major')}/></div>
           </div>
           <div className="fp-full">
