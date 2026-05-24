@@ -411,16 +411,39 @@
 const { useState, useEffect } = React;
 
 // URL 인코딩 방식 - Supabase 불필요
-const encodeResult = (data) => {
-  try { return btoa(encodeURIComponent(JSON.stringify(data))); } catch { return null; }
+const SB_URL = 'https://zmtldohklivkzpfdyflc.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptdGxkb2hrbGl2a3pwZmR5ZmxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NjgxMDQsImV4cCI6MjA4ODU0NDEwNH0.cv1WrvDzNedVZABWyRCS9ARRxf4Si9qgeUqEvhpHWlo';
+
+// 짧은 6자리 ID 생성
+const makeId = () => Math.random().toString(36).substr(2,6).toUpperCase();
+
+// Supabase에 결과 저장 → 짧은 ID 반환
+const saveResult = async (data) => {
+  const id = makeId();
+  const key = `curricula_${id}`;
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/piltop_data`, {
+      method:'POST',
+      headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({key, value:`${data.form.career} ${data.form.major}`, jsonb:data})
+    });
+    if(!res.ok) return null;
+    return id;
+  } catch { return null; }
 };
-const decodeResult = (str) => {
-  try { return JSON.parse(decodeURIComponent(atob(str))); } catch { return null; }
+
+// Supabase에서 결과 불러오기
+const loadResult = async (id) => {
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/piltop_data?key=eq.curricula_${id}&select=jsonb`, {
+      headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}
+    });
+    const data = await res.json();
+    return data?.[0]?.jsonb || null;
+  } catch { return null; }
 };
-const makeShareUrl = (data) => {
-  const e = encodeResult(data);
-  return e ? `${location.origin}${location.pathname}?r=${e}` : null;
-};
+
+const makeShareUrl = (id) => `${location.origin}${location.pathname}?r=${id}`;
 
 const SYSTEM = `당신은 2022 개정 교육과정(고교학점제) 선택과목 추천 전문 AI입니다.
 
@@ -715,8 +738,7 @@ function FormPage({onBack,onResult}){
         return;
       }
       const results=parsed;
-      const encoded=encodeResult({form,results});
-      onResult({results,form,encoded});
+      onResult({results,form});
     }catch(e){
       clearInterval(t);
       const msg=String(e.message);
@@ -790,13 +812,13 @@ function PSection({priority,subjects}){
   );
 }
 
-function ResultsPage({results,form,onBack,isShared}){
+function ResultsPage({results,form,shareId,onBack,isShared}){
   const [toast,setToast]=useState('');
   const total=(results.subjects||[]).length;
   const 필수cnt=(results.subjects||[]).filter(s=>s.priority==='필수').length;
   const 추천cnt=(results.subjects||[]).filter(s=>s.priority==='추천').length;
 
-  const shareUrl=makeShareUrl({results,form});
+  const shareUrl=shareId?makeShareUrl(shareId):null;
 
   const copy=()=>{
     if(!shareUrl){setToast('링크 생성 중 오류가 발생했습니다.');setTimeout(()=>setToast(''),2500);return;}
@@ -856,33 +878,38 @@ function App(){
   const [loading,setLoading]=useState(false);
 
   useEffect(()=>{
-    try{
-      const params=new URLSearchParams(location.search);
-      const rid=params.get('r');
-      if(rid){
-        const d=decodeResult(rid);
+    const params=new URLSearchParams(location.search);
+    const rid=params.get('r');
+    if(rid){
+      setLoading(true);
+      loadResult(rid).then(d=>{
         if(d?.results&&d?.form){
-          setRdata({...d,isShared:true});
+          setRdata({...d,shareId:rid,isShared:true});
           setPage('results');
         }
-      }
-    } catch(e){console.error(e);}
+        setLoading(false);
+      }).catch(()=>setLoading(false));
+    }
   },[]);
 
   if(loading) return <div className="ld"><div className="spinner"/><p className="ld-txt">결과를 불러오는 중...</p></div>;
 
   const goForm=()=>{setPage('form');window.scrollTo(0,0);};
   const goHome=()=>{setPage('landing');window.scrollTo(0,0);history.pushState('','',location.pathname);};
-  const goResult=d=>{
+  const goResult=async(d)=>{
     setRdata(d);setPage('results');
-    const u=makeShareUrl(d);
-    if(u) history.pushState('','',u);
     window.scrollTo(0,0);
+    // Supabase 저장 후 짧은 URL 생성
+    const id=await saveResult(d);
+    if(id){
+      setRdata(prev=>({...prev,shareId:id}));
+      history.pushState('','',makeShareUrl(id));
+    }
   };
 
   if(page==='landing') return <Landing onStart={goForm}/>;
   if(page==='form') return <FormPage onBack={goHome} onResult={goResult}/>;
-  if(page==='results'&&rdata) return <ResultsPage results={rdata.results} form={rdata.form} onBack={()=>{setPage('form');history.pushState('','',location.pathname);}} isShared={rdata.isShared}/>;
+  if(page==='results'&&rdata) return <ResultsPage results={rdata.results} form={rdata.form} shareId={rdata.shareId} onBack={()=>{setPage('form');history.pushState('','',location.pathname);}} isShared={rdata.isShared}/>;
   return null;
 }
 
