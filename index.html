@@ -211,7 +211,7 @@
     .fp-ttl{font-family:var(--fd);font-size:clamp(32px,5vw,52px);font-weight:900;color:var(--cream);line-height:1.05;letter-spacing:-1px;margin-bottom:7px;position:relative;z-index:1}
     .fp-sub{font-size:13px;color:rgba(237,229,204,.4);position:relative;z-index:1}
     .fp-wrap{padding:0 24px 56px;margin-top:-56px;display:flex;justify-content:center;position:relative;z-index:10}
-    .fp-card{max-width:660px;width:100%;background:#fff;border-radius:18px;padding:28px 24px 24px;box-shadow:0 8px 40px rgba(0,0,0,.18)}
+    .fp-card{max-width:720px;width:100%;background:#fff;border-radius:18px;padding:28px 32px 24px;box-shadow:0 8px 40px rgba(0,0,0,.18)}
     .fp-ctitle{font-size:14px;font-weight:700;color:var(--text);text-align:center;margin-bottom:18px}
     .fp-row{display:grid;grid-template-columns:100px 1fr 1fr;gap:10px;margin-bottom:10px}
     .fp-grp{display:flex;flex-direction:column}
@@ -255,15 +255,15 @@
     .rp-sn.red{color:#e74c3c}
     .rp-sn.amb{color:var(--gold)}
     .rp-sl{font-size:11px;color:rgba(237,229,204,.38);margin-top:4px}
-    .rp-wrap{padding:0 22px 56px;margin-top:-44px;position:relative;z-index:10}
-    .rp-card{max-width:940px;margin:0 auto;background:#fff;border-radius:18px;padding:24px;box-shadow:0 8px 40px rgba(0,0,0,.18)}
+    .rp-wrap{padding:0 48px 56px;margin-top:-44px;position:relative;z-index:10}
+    .rp-card{max-width:1100px;margin:0 auto;background:#fff;border-radius:18px;padding:28px 32px;box-shadow:0 8px 40px rgba(0,0,0,.18)}
     .rp-top2{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
     .chips{display:flex;gap:5px;flex-wrap:wrap}
     .chip{padding:4px 11px;background:#f5f0e6;border:1px solid #e0d8c0;color:#7a6228;border-radius:20px;font-size:11px;font-weight:600}
     .rp-btns{display:flex;gap:7px;flex-wrap:wrap}
-    .rb-lnk{padding:7px 13px;background:var(--bg2);border:none;border-radius:8px;color:var(--cream);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fb);white-space:nowrap}
+    .rb-lnk{padding:7px 13px;background:var(--bg2);border:none;border-radius:8px;color:var(--cream);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fb);white-space:nowrap;position:relative;z-index:10;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
     .rb-lnk:hover{background:var(--bg3)}
-    .rb-pdf{padding:7px 13px;background:var(--gold);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--fb);white-space:nowrap}
+    .rb-pdf{padding:7px 13px;background:var(--gold);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--fb);white-space:nowrap;position:relative;z-index:10;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
     .rb-pdf:hover{background:var(--gold2)}
     .rb-bk{padding:7px 13px;background:#f5f0e6;border:1px solid #e0d8c0;border-radius:8px;color:#7a6228;font-size:12px;cursor:pointer;font-family:var(--fb);white-space:nowrap}
     .strat{background:#f8f5ec;border:1px solid #e0d8c0;border-radius:11px;padding:15px 18px;margin-bottom:16px}
@@ -383,12 +383,25 @@
       .rb-bk{grid-column:auto}
     }
     @media print{
-      .fp-back,.fp-logo,.rp-home,.rp-btns,.rp-footer,.toast,.tut-bar{display:none!important}
-      body{background:#fff}
-      .rp,.rp-wrap{background:#fff;padding:0}
-      .rp-card{box-shadow:none;border:1px solid #ddd;border-radius:0}
-      .scard{break-inside:avoid}
-      .pbdg{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+      .fp-back,.fp-logo,.rp-home,.rp-btns,.rp-footer,.toast,.tut-bar,.rp-ey,.rp-hds,.rp-stats{display:none!important}
+      body{background:#fff!important;margin:0;padding:0}
+      .rp{background:#fff!important;min-height:auto}
+      .rp-top{background:#033828!important;padding:24px 32px 32px!important}
+      .rp-hd{font-size:28px!important}
+      .rp-wrap{padding:16px 24px 32px!important;margin-top:0!important;background:#fff!important}
+      .rp-card{box-shadow:none!important;border:1px solid #e0d8c0!important;border-radius:8px!important;padding:16px!important;max-width:100%!important}
+      .scard{break-inside:avoid;margin-bottom:8px}
+      .pbdg{color:#fff!important}
+      .pb-필수{background:#c0392b!important;color:#fff!important}
+      .pb-추천{background:#c9a843!important;color:#fff!important}
+      .pb-선택{background:#f0ebe0!important;color:#7a6228!important}
+      .sc-필수,.sc-추천,.sc-선택{grid-template-columns:repeat(2,1fr)!important}
+      .cat-g{background:#eff6ff!important;color:#2563eb!important}
+      .cat-c{background:#fdf8ee!important;color:#8a6e1a!important}
+      .cat-f{background:#f0fdf4!important;color:#166534!important}
+      .strat{background:#f8f5ec!important;border:1px solid #e0d8c0!important}
+      .chips .chip{background:#f5f0e6!important;border:1px solid #e0d8c0!important}
     }
   </style>
 </head>
@@ -411,25 +424,24 @@ const makeShareUrl = (data) => {
 
 const SYSTEM = `당신은 2022 개정 교육과정(고교학점제) 선택과목 추천 전문 AI입니다.
 
+[절대 금지] 2015 개정 교육과정 과목명 사용 금지: 생명과학Ⅱ, 화학Ⅱ, 물리학Ⅱ, 생물Ⅱ, 지구과학Ⅱ, 수학Ⅱ 등. 2022 개정 공식 과목명만 사용.
+
 [STEP 1 — 대학·학과 검증 (희망 대학 입력 시 필수)]
-웹 검색으로 반드시 확인:
-① 해당 대학에 해당 학과(전공)가 실제 존재하는지
-② 해당 대학·학과의 공식 권장과목
+웹 검색으로 확인: ①해당 대학에 해당 학과 실제 존재 여부 ②권장과목
+학과 없으면: {"error_type":"department_not_found","university":"대학명","major":"전공명","message":"설명","alternatives":["유사학과1","유사학과2"]}
+학과 있으면: overall_strategy 첫 문장에 "검색 결과 [대학명]에 [학과명]이 존재하며 권장과목을 반영했습니다." 반드시 포함.
 
-학과가 없으면:
-{"error_type":"department_not_found","university":"대학명","major":"전공명","message":"없는 이유 1문장","alternatives":["실제 존재하는 유사 학과1","유사 학과2"]}
-
-[STEP 2 — 과목 추천 결과]
-{"overall_strategy":"2~3문장 전략","subjects":[{"name":"과목명","category":"일반선택|진로선택|융합선택","priority":"필수|추천|선택","reason":"추천 이유 + 등급 방식 포함 2문장","extracurricular":["세특 탐구주제1","세특 탐구주제2"]}]}
+[STEP 2 — 결과 JSON]
+{"overall_strategy":"3문장 전략(대학검증결과+전략+핵심과목)","subjects":[{"name":"과목명","category":"일반선택|진로선택|융합선택","priority":"필수|추천|선택","reason":"추천이유+등급방식 2문장","extracurricular":["세특주제1","세특주제2"]}]}
 
 총 8~12개: 필수 2~4개, 추천 3~5개, 선택 1~3개
-고1 → 고2~3 전체 로드맵 / 고2 → 고3 집중 과목 위주
+학년 구분 없이 고1~고3 전체 로드맵으로 추천. 학생이 자신의 학년에 맞게 선택할 수 있도록.
 
 [전공별 필수과목 — 반드시 필수에 포함]
 의학·치의학·한의학: 화학(일반), 생명과학(일반), 미적분Ⅱ(진로)
 약학·간호·보건: 화학(일반), 생명과학(일반), 확률과통계또는미적분Ⅱ(진로)
 수의학: 화학(일반), 생명과학(일반), 세포와물질대사(진로)
-생명과학·생물학·생명공학: 생명과학(일반), 화학(일반), 세포와물질대사(진로)
+생명과학·생물학·생명공학: 생명과학(일반), 화학(일반), 세포와물질대사(진로), 생물의유전(진로-추천이상)
 화학·화학공학: 화학(일반), 물질과에너지(진로), 화학반응의세계(진로)
 물리학·물리치료: 물리학(일반), 역학과에너지(진로), 미적분Ⅱ(진로)
 기계·항공우주·로봇공학: 물리학(일반), 미적분Ⅱ(진로), 역학과에너지(진로), 지구과학(일반)
@@ -442,42 +454,39 @@ const SYSTEM = `당신은 2022 개정 교육과정(고교학점제) 선택과목
 지구과학·환경·기상: 지구과학(일반), 지구시스템과학(진로), 행성우주과학(진로)
 경제·경영·회계: 경제(진로), 확률과통계(일반), 사회와문화(일반)
 법학·행정·정치외교: 법과사회(진로), 정치(진로), 현대사회와윤리(일반)
-심리학과: 인간과심리(교양), 사회와문화(일반), 확률과통계(일반)
-교육학과: 인간과심리(교양), 교육의이해(교양), 사회와문화(일반)
-국어국문·문예창작: 문학(일반), 독서와작문(일반), 주제탐구독서(진로)
-영어영문·국제학: 영어Ⅱ(일반), 심화영어(진로), 영어발표와토론(진로)
+심리학과: 확률과통계(일반), 사회와문화(일반), 인간과심리(교양)
+교육학과: 교육의이해(교양), 인간과심리(교양), 사회와문화(일반)
 사회복지학과: 사회와문화(일반), 인간과심리(교양), 현대사회와윤리(일반)
 아동학과·아동보육: 아동발달과부모(기술가정진로), 인간과심리(교양), 사회와문화(일반)
-디자인·미술: 미술(일반), 미술창작(진로), 미술감상과비평(진로)
-음악: 음악(일반), 음악연주와창작(진로), 음악감상과비평(진로)
-체육·스포츠과학: 체육1(일반), 운동과건강(진로), 스포츠과학(융합)
-역사학·고고학·문화재: 세계사(일반), 동아시아사주제탐구(진로), 역사로탐구하는현대세계(융합)
-언론·미디어·광고·홍보: 화법과언어(일반), 매체의사소통(국어융합), 사회와문화(일반)
-관광·호텔·항공서비스: 영어Ⅱ(일반), 세계시민과지리(일반), 세계문화와영어(영어융합)
-식품영양·식품공학·조리: 화학(일반), 생명과학(일반), 세포와물질대사(진로)
-환경공학·환경과학: 지구과학(일반), 화학(일반), 기후변화와환경생태(과학융합)
+국어국문·문예창작: 문학(일반), 독서와작문(일반), 주제탐구독서(진로)
+영어영문·국제학: 영어Ⅱ(일반), 심화영어(진로), 영어발표와토론(진로)
+사범대(수학교육): 미적분Ⅱ(진로), 기하(진로), 확률과통계(일반)
+사범대(과학교육): 해당과학과목(일반), 해당진로선택, 미적분Ⅱ(진로)
+사범대(국어교육): 문학(일반), 독서와작문(일반), 주제탐구독서(진로)
+사범대(영어교육): 영어Ⅱ(일반), 심화영어(진로), 영어발표와토론(진로)
+사범대(사회·역사교육): 세계사(일반), 사회와문화(일반), 현대사회와윤리(일반)
+사범대(체육교육): 체육1(일반), 운동과건강(진로), 스포츠과학(융합)
+초등교육과(교대): 인간과심리(교양), 교육의이해(교양), 사회와문화(일반)
+자율전공·자유전공학부: 미적분Ⅰ(일반), 사회와문화(일반), 영어Ⅱ(일반), 문학(일반)
+언론·미디어·광고: 화법과언어(일반), 매체의사소통(융합), 사회와문화(일반)
+관광·호텔·항공서비스: 영어Ⅱ(일반), 세계시민과지리(일반), 세계문화와영어(융합)
+식품영양·식품공학: 화학(일반), 생명과학(일반), 세포와물질대사(진로)
+환경공학·환경과학: 지구과학(일반), 화학(일반), 기후변화와환경생태(융합)
 조선·해양공학: 물리학(일반), 미적분Ⅱ(진로), 지구과학(일반)
 재료·신소재공학: 물리학(일반), 화학(일반), 물질과에너지(진로)
 의공학·바이오메디컬: 화학(일반), 생명과학(일반), 물리학(일반)
 경찰·소방·군사학: 법과사회(진로), 현대사회와윤리(일반), 체육1(일반)
-사회학·문화인류학: 사회와문화(일반), 세계시민과지리(일반), 사회문제탐구(사회융합)
-지리학·도시학: 세계시민과지리(일반), 도시의미래탐구(진로), 한국지리탐구(진로)
-경호·스포츠재활: 체육1(일반), 운동과건강(진로), 인간과심리(교양)
-사범대(수학교육): 미적분Ⅱ(진로), 기하(진로), 확률과통계(일반)
-사범대(과학교육): 물리학또는화학또는생명과학(일반), 역학과에너지또는세포와물질대사(진로), 미적분Ⅱ(진로)
-사범대(국어교육): 문학(일반), 독서와작문(일반), 주제탐구독서(진로)
-사범대(영어교육): 영어Ⅱ(일반), 심화영어(진로), 영어발표와토론(진로)
-사범대(사회교육·역사교육): 세계사(일반), 사회와문화(일반), 현대사회와윤리(일반)
-사범대(체육교육): 체육1(일반), 운동과건강(진로), 스포츠과학(융합)
-초등교육과(교대): 인간과심리(교양), 교육의이해(교양), 사회와문화(일반)
-자율전공·자유전공학부: 미적분Ⅰ또는확률과통계(일반), 사회와문화(일반), 문학(일반), 영어Ⅱ(일반)
+역사학·고고학: 세계사(일반), 동아시아사주제탐구(진로), 역사로탐구하는현대세계(융합)
+디자인·미술: 미술(일반), 미술창작(진로), 미술감상과비평(진로)
+음악: 음악(일반), 음악연주와창작(진로), 음악감상과비평(진로)
+체육·스포츠과학: 체육1(일반), 운동과건강(진로), 스포츠과학(융합)
 
-[내신 등급 평가 방식 — reason에 반드시 포함]
-5등급 절대평가: 사회·과학 융합선택(여행지리, 사회문제탐구, 역사로탐구하는현대세계, 금융과경제생활, 윤리문제탐구, 기후변화와지속가능한세계, 과학의역사와문화, 기후변화와환경생태, 융합과학탐구)
-등급 미산출: 예술(음악·미술·연극), 체육, 교양, 과학탐구실험
-5등급 상대평가: 그 외 일반선택·진로선택 전체
+[내신 등급 평가 — reason에 반드시 포함]
+5등급 절대평가: 사회·과학 융합선택(여행지리,사회문제탐구,역사로탐구하는현대세계,금융과경제생활,윤리문제탐구,기후변화와지속가능한세계,과학의역사와문화,기후변화와환경생태,융합과학탐구)
+등급미산출: 예술(음악·미술·연극), 체육, 교양, 과학탐구실험
+5등급 상대평가: 그 외 일반선택·진로선택
 
-순수 JSON만 반환. 마크다운·설명 없이.`;
+순수 JSON만 반환. 마크다운 없이.`;
 
 const LSTEPS=['진로·전공 분석','대학·학과 실시간 검색','2022 개정 과목 매칭','세특 탐구 주제 생성'];
 const PMETA={필수:{desc:'대학 권장 · 전공 직결'},추천:{desc:'진로 강력 연계'},선택:{desc:'보완 · 심화'}};
@@ -650,7 +659,7 @@ function Landing({onStart}){
 }
 
 function FormPage({onBack,onResult}){
-  const [form,setForm]=useState({grade:'1',career:'',major:'',university:''});
+  const [form,setForm]=useState({career:'',major:'',university:''});
   const [error,setError]=useState(null);
   const [loading,setLoading]=useState(false);
   const [lstep,setLstep]=useState(0);
@@ -660,7 +669,7 @@ function FormPage({onBack,onResult}){
   const submit=async()=>{
     setLoading(true);setError(null);setLstep(0);
     const t=setInterval(()=>setLstep(s=>s<LSTEPS.length-1?s+1:s),3500);
-    const msg=`고${form.grade}학년, 희망진로:${form.career}, 희망전공:${form.major}${form.university?`, 희망대학:${form.university}`:''}`;
+    const msg=`희망진로:${form.career}, 희망전공:${form.major}${form.university?`, 희망대학:${form.university}`:''}`;
     try{
       const res=await fetch('/api/proxy',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2000,system:SYSTEM,
@@ -689,7 +698,17 @@ function FormPage({onBack,onResult}){
       const results=parsed;
       const encoded=encodeResult({form,results});
       onResult({results,form,encoded});
-    }catch(e){clearInterval(t);setError(`오류: ${String(e.message)}`);setLoading(false);}
+    }catch(e){
+      clearInterval(t);
+      const msg=String(e.message);
+      if(msg.includes('rate limit')||msg.includes('Rate limit')){
+        setError('⏳ 요청이 너무 많습니다. 30초 후 자동으로 다시 시도합니다...');
+        setTimeout(()=>{ setError(null); submit(); }, 30000);
+      } else {
+        setError(`오류: ${msg}`);
+      }
+      setLoading(false);
+    }
   };
 
   if(loading) return(
@@ -715,8 +734,7 @@ function FormPage({onBack,onResult}){
       <div className="fp-wrap">
         <div className="fp-card">
           <div className="fp-ctitle">학년 · 진로 · 전공을 입력해주세요</div>
-          <div className="fp-row">
-            <div className="fp-grp"><label className="fp-lbl">학년<span className="req">*</span></label><select className="fp-ctrl" value={form.grade} onChange={set('grade')} style={{fontSize:16}}><option value="1">고1</option><option value="2">고2</option></select></div>
+          <div className="fp-row" style={{gridTemplateColumns:'1fr 1fr'}}>
             <div className="fp-grp"><label className="fp-lbl">희망 진로<span className="req">*</span></label><input className="fp-ctrl" placeholder="예: 의사, 소프트웨어 엔지니어…" value={form.career} onChange={set('career')}/></div>
             <div className="fp-grp"><label className="fp-lbl">희망 전공<span className="req">*</span></label><input className="fp-ctrl" placeholder="예: 의학과, 컴퓨터공학과…" value={form.major} onChange={set('major')}/></div>
           </div>
@@ -793,13 +811,12 @@ function ResultsPage({results,form,onBack,isShared}){
         <div className="rp-card">
           <div className="rp-top2">
             <div className="chips">
-              <span className="chip">고{form.grade}</span>
               <span className="chip">{form.career}</span>
               <span className="chip">{form.major}</span>
               {form.university&&<span className="chip">{form.university}</span>}
             </div>
             <div className="rp-btns">
-              {shareUrl&&<button className="rb-lnk" onClick={copy}>🔗 링크 복사</button>}
+              {shareUrl&&!isShared&&<button className="rb-lnk" onClick={copy}>🔗 링크 복사</button>}
               <button className="rb-pdf" onClick={printPage}>📄 PDF 저장</button>
               {!isShared&&<button className="rb-bk" onClick={onBack}>↩ 다시 입력</button>}
             </div>
