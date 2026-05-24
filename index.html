@@ -896,7 +896,14 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
       ];
       let lastErr;
       for(const fn of attempts){try{parsed=fn();break;}catch(e){lastErr=e;}}
-      if(!parsed) throw new Error('JSON 파싱 실패: '+lastErr.message);
+      if(!parsed){
+        // 파싱 실패 시 1회 자동 재시도
+        console.log('파싱 실패, 재시도...');
+        clearInterval(t);
+        setLoading(false);
+        setTimeout(()=>submit(), 1000);
+        return;
+      }
       // 대학·학과 존재 여부 오류 처리
       if(parsed.error_type){
         setLoading(false);
