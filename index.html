@@ -462,7 +462,7 @@ const loadFallback=(enc)=>{
 // Supabase에서 결과 불러오기
 const loadResult = async (id) => {
   try {
-    const res = await fetch(`${SB_URL}/rest/v1/piltop_data?key=eq.curricula_${id}&select=jsonb`, {
+    const res = await fetch(`${SB_URL}/rest/v1/piltop_data?key=eq.curricula_${id}&select=value`, {
       headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}
     });
     const data = await res.json();
