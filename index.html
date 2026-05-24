@@ -421,21 +421,27 @@ const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 // 짧은 6자리 ID 생성
 const makeId = () => Math.random().toString(36).substr(2,6).toUpperCase();
 
-// /api/store 서버 경유로 저장 → 짧은 ID 반환
+// Supabase 직접 저장
 const saveResult = async (data) => {
+  const id = makeId();
+  const key = `curricula_${id}`;
   try {
-    const res = await fetch('/api/store', {
+    const r = await fetch(`${SB_URL}/rest/v1/piltop_data`, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data)
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': `Bearer ${SB_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({key, value:`${data.form?.career||''} ${data.form?.major||''}`.trim(), jsonb:data})
     });
-    const json = await res.json();
-    if (!res.ok || !json.id) { console.error('store 실패:', json); return null; }
-    return json.id;
-  } catch(e) {
-    console.error('store 오류:', e);
+    console.log('Supabase 저장 결과:', r.status);
+    if(r.status===201||r.status===200||r.status===204) return id;
+    const t = await r.text();
+    console.error('Supabase 오류:', r.status, t);
     return null;
-  }
+  } catch(e) { console.error('저장 실패:', e); return null; }
 };
 
 // URL 압축 저장 (Supabase 실패 시 fallback)
