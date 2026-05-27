@@ -585,8 +585,9 @@ const SYSTEM = `당신은 2022 개정 교육과정(고교학점제) 선택과목
 {"overall_strategy":"3문장 전략(대학검증결과+전략+핵심과목)","subjects":[{"name":"과목명","category":"일반선택|진로선택|융합선택","priority":"필수|추천|선택","reason":"추천이유+등급방식 2문장","extracurricular":["세특주제1","세특주제2"]}]}
 
 총 8~12개: 필수 2~4개, 추천 3~5개, 선택 1~3개
-고1 입력 시 → 고2·고3 전체 로드맵 과목 추천 (앞으로 선택해야 할 모든 과목)
-고2 입력 시 → 고3에서 선택해야 할 과목 중심으로 추천 (당장 다음 학년 집중)
+고1 입력 시 → 고2·고3 전체 로드맵 과목 추천 (선택 가능한 모든 과목 기준)
+고2 입력 시 → 고3에서 선택할 과목 중심 추천
+학교 편제 개설과목이 제공된 경우 반드시 그 범위 내에서 추천 (2022 개정 교육과정 기준)
 
 [전공별 필수과목 — 반드시 필수에 포함]
 의학·치의학·한의학: 화학(일반), 생명과학(일반), 미적분Ⅱ(진로)
@@ -696,8 +697,9 @@ const classifySubjects = (subjects) => {
       matched.forEach(s=>used.add(s));
     }
   }
-  // 미분류
-  const etc = subjects.filter(s=>!used.has(s));
+  // 미분류 중 실제 과목만 (행사·활동 제외)
+  const excludeKeywords = ['활동','행사','총회','축제','캠프','체험','견학','봉사','조회','기념일','휴업일','재량'];
+  const etc = subjects.filter(s=>!used.has(s)&&!excludeKeywords.some(k=>s.includes(k)));
   if(etc.length>0) result['기타']=etc;
   return result;
 };
@@ -989,8 +991,9 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
     setSchoolSubjectsSafe([]);
     setForm(p=>({...p,schoolName:school.name}));
     try{
-      // 고1 → 고2+고3 개설과목, 고2 → 고3 개설과목
-      const gradesToFetch = form.grade==='1' ? ['2','3'] : ['3'];
+      // 2022 개정 교육과정 적용된 학년은 현재 고2까지
+      // 고3은 아직 2015 개정 → 고2 시간표만 사용
+      const gradesToFetch = ['2'];
       const allSubjects = new Set();
       for(const g of gradesToFetch){
         const r=await fetch('/api/school',{method:'POST',headers:{'Content-Type':'application/json'},
@@ -1165,7 +1168,10 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
 function CurriculumPanel({school,subjects,recommended}){
   const [open,setOpen]=React.useState(false);
   const cats=classifySubjects(subjects);
-  const recSet=new Set(recommended);
+  // 부분 매칭으로 하이라이트 (괄호/띄어쓰기 차이 허용)
+  const normalize=s=>s.replace(/[\s()Ⅰ-Ⅻ]/g,'').toLowerCase();
+  const recNorm=new Set(recommended.map(normalize));
+  const isMatched=s=>recNorm.has(normalize(s));
   return(
     <div className="curr-wrap">
       <button className="curr-toggle" onClick={()=>setOpen(o=>!o)}>
@@ -1180,7 +1186,7 @@ function CurriculumPanel({school,subjects,recommended}){
                 <div className="curr-cat-name">{cat}</div>
                 <div className="curr-tags">
                   {subs.map((s,j)=>(
-                    <span key={j} className={`curr-tag${recSet.has(s)?' matched':''}`}>{s}</span>
+                    <span key={j} className={`curr-tag${isMatched(s)?' matched':''}`}>{s}</span>
                   ))}
                 </div>
               </div>
