@@ -961,7 +961,11 @@ function HistoryPage({onBack,onSelect}){
                   <div style={{fontWeight:800,fontSize:15,color:'#1a1a1a',marginBottom:3}}>
                     {f.career||'—'} · <span style={{color:'#7a6228'}}>{f.major||'—'}</span>
                   </div>
-                  {f.university&&<div style={{fontSize:12,color:'#aaa',marginBottom:2}}>{f.university}</div>}
+                  <div style={{fontSize:12,color:'#aaa',marginBottom:2,display:'flex',gap:8,flexWrap:'wrap'}}>
+                    {f.selectedSchool?.name&&<span>🏫 {f.selectedSchool.name}</span>}
+                    {f.university&&<span>{f.university}</span>}
+                    {f.grade&&<span>고{f.grade}</span>}
+                  </div>
                   <div style={{fontSize:11,color:'#ccc'}}>{formatDate(item.value?.savedAt||item.updated_at)}</div>
                 </div>
                 <button onClick={(e)=>handleDelete(item.key,e)} style={{background:'none',border:'1px solid #e0d8c0',borderRadius:6,padding:'4px 9px',color:'#bbb',fontSize:12,cursor:'pointer',flexShrink:0,fontFamily:'inherit'}}
@@ -1030,8 +1034,20 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
       setSchoolSubjectsSafe((d.subjects||[]).sort());
     }catch(e){setSchoolSubjectsSafe([]);}
   };
-  // 공유 링크로 접근 시 자동 제출
-  useEffect(()=>{ if(autoForm&&autoForm.career&&autoForm.major) submit(); },[]);
+  // autoForm에 selectedSchool 있으면 편제표 자동 조회
+  useEffect(()=>{
+    const sc=autoForm?.selectedSchool;
+    if(sc?.atpt_code&&sc?.school_code){
+      setSelectedSchoolSafe(sc);
+      setForm(p=>({...p,schoolName:sc.name,grade:autoForm.grade||p.grade}));
+      fetch('/api/school',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({action:'subjects',atpt_code:sc.atpt_code,school_code:sc.school_code,grade:['2','3']})})
+      .then(r=>r.json())
+      .then(d=>{ if(d.subjects?.length>0) setSchoolSubjectsSafe(d.subjects); })
+      .catch(()=>{});
+    }
+    if(autoForm&&autoForm.career&&autoForm.major) submit();
+  },[]);
 
   const submit=async()=>{
     setLoading(true);setError(null);setLstep(0);
@@ -1200,6 +1216,15 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
 
 function CurriculumPanel({school,subjects,recommended}){
   const [open,setOpen]=React.useState(false);
+  if(!subjects||subjects.length===0){
+    return(
+      <div className="curr-wrap">
+        <div className="curr-toggle" style={{cursor:'default'}}>
+          <span>🏫 {school.name} 편제표 (로딩 중...)</span>
+        </div>
+      </div>
+    );
+  }
   const cats=classifySubjects(subjects);
   // 포함 관계 매칭 (과목명이 서로 포함되면 매칭)
   const clean=s=>s.replace(/[\s()\[\]（）]/g,'').replace(/[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]/g,'').toLowerCase();
@@ -1360,7 +1385,7 @@ function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
             <CurriculumPanel school={form.selectedSchool} subjects={schoolSubjects} recommended={(results.subjects||[]).map(s=>s.name)}/>
           )}
           <div className="strat"><div className="strat-l">과목 선택 전략</div><p className="strat-t">{results.overall_strategy}</p></div>
-          {['필수','추천','선택'].map(p=><PSection key={p} priority={p} subjects={results.subjects||[]}/>)}
+          {['필수','추천','선택'].map(p=><PSection key={p} priority={p} subjects={computedSubjects}/>)}
           <div className="rp-footer">2022 개정 교육과정 기준 · 웹 검색 기반 대학 권장과목 반영 · 반드시 각 대학 입학처에서 최신 정보를 확인하세요 · 필탑학원</div>
         </div>
       </div>
