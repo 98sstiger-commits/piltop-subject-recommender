@@ -1,8 +1,10 @@
 const NEIS_KEY = '0e64c7c2b82142bfa57843bdb1b2d98f';
 const BASE = 'https://open.neis.go.kr/hub';
 
-// 비과목 키워드 (시간표에 나오지만 선택과목 아닌 것)
-const NON_SUBJECTS = ['활동','행사','총회','축제','캠프','체험','견학','봉사','조회','기념일','휴업일','재량','자율','토요','학부모','보강','대체','문화체험','진로활동'];
+// 2015개정 과목명 패턴 (Ⅱ 붙은 과학과목들)
+const OLD_CURRICULUM = ['물리학Ⅱ','화학Ⅱ','생명과학Ⅱ','지구과학Ⅱ','물리Ⅱ','화학Ⅱ'];
+// 비과목 키워드
+const NON_SUBJECTS = ['활동','행사','총회','축제','캠프','견학','봉사','조회','기념일','휴업일','재량','자율','토요','학부모','보강','대체','문화체험'];
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -39,34 +41,39 @@ export default async function handler(req, res) {
       const year = new Date().getFullYear();
       const subjects = new Set();
 
-      // 1학기 + 2학기, 최대 5페이지까지 조회해 전체 과목 수집
-      for (const sem of ['1', '2']) {
-        for (let pIndex = 1; pIndex <= 5; pIndex++) {
-          const params = new URLSearchParams({
-            KEY: NEIS_KEY, Type: 'json',
-            pIndex, pSize: 1000,
-            ATPT_OFCDC_SC_CODE: atpt_code,
-            SD_SCHUL_CODE: school_code,
-            AY: year, SEM: sem, GRADE: grade
-          });
-          const r = await fetch(`${BASE}/hisTimetable?${params}`);
-          const d = await r.json();
-          const rows = d?.hisTimetable?.[1]?.row || [];
-          if (rows.length === 0) break;
+      // grade 파라미터로 받은 학년들을 모두 조회
+      const grades = Array.isArray(grade) ? grade : [grade];
 
-          rows.forEach(row => {
-            const s = (row.ITRT_CNTNT || '').trim();
-            if (!s || s.startsWith('[')) return;
-            // 비과목 필터링
-            if (NON_SUBJECTS.some(k => s.includes(k))) return;
-            // 한글 포함 여부 확인 (과목명은 한글 포함)
-            if (!/[가-힣]/.test(s)) return;
-            // 너무 짧은 것 제외
-            if (s.length < 2) return;
-            subjects.add(s);
-          });
+      for (const g of grades) {
+        for (const sem of ['1', '2']) {
+          for (let pIndex = 1; pIndex <= 5; pIndex++) {
+            const params = new URLSearchParams({
+              KEY: NEIS_KEY, Type: 'json',
+              pIndex, pSize: 1000,
+              ATPT_OFCDC_SC_CODE: atpt_code,
+              SD_SCHUL_CODE: school_code,
+              AY: year, SEM: sem, GRADE: g
+            });
+            const r = await fetch(`${BASE}/hisTimetable?${params}`);
+            const d = await r.json();
+            const rows = d?.hisTimetable?.[1]?.row || [];
+            if (rows.length === 0) break;
 
-          if (rows.length < 1000) break;
+            rows.forEach(row => {
+              const s = (row.ITRT_CNTNT || '').trim();
+              if (!s || s.startsWith('[')) return;
+              // 2015 개정 과목 제외
+              if (OLD_CURRICULUM.some(o => s.includes(o))) return;
+              // 비과목 제외
+              if (NON_SUBJECTS.some(k => s.includes(k))) return;
+              // 한글 없으면 제외
+              if (!/[가-힣]/.test(s)) return;
+              if (s.length < 2) return;
+              subjects.add(s);
+            });
+
+            if (rows.length < 1000) break;
+          }
         }
       }
 
