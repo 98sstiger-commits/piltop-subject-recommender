@@ -1130,7 +1130,8 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
       const formToSave={
         career:form.career, major:form.major, university:form.university,
         grade:form.grade, schoolName:form.schoolName,
-        selectedSchool:selSchool?{name:selSchool.name,atpt_code:selSchool.atpt_code,school_code:selSchool.school_code,region:selSchool.region}:null
+        selectedSchool:selSchool?{name:selSchool.name,atpt_code:selSchool.atpt_code,school_code:selSchool.school_code,region:selSchool.region}:null,
+        schoolSubjects:fetchedSubjects.length>0?fetchedSubjects:schoolSubjectsRef.current
       };
       const shareId=autoForm
         ? await saveResultTemp({results,form:formToSave})
@@ -1321,7 +1322,7 @@ function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
 
   React.useEffect(()=>{
     const sc=form.selectedSchool;
-    if(sc?.atpt_code&&sc?.school_code&&schoolSubjects.length===0){
+    if(sc?.atpt_code&&sc?.school_code&&(!form.schoolSubjects||form.schoolSubjects.length===0)&&schoolSubjects.length===0){
       fetch('/api/school',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({action:'subjects',atpt_code:sc.atpt_code,school_code:sc.school_code,grade:['2','3']})})
       .then(r=>r.json())
