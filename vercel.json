@@ -5,6 +5,9 @@
     },
     "api/store.js": {
       "maxDuration": 10
+    },
+    "api/school.js": {
+      "maxDuration": 30
     }
   }
 }
