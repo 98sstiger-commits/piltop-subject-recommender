@@ -961,6 +961,11 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
   const [schoolSearching,setSchoolSearching]=React.useState(false);
   const [selectedSchool,setSelectedSchool]=React.useState(autoForm?.selectedSchool||null);
   const [schoolSubjects,setSchoolSubjects]=React.useState(autoForm?.schoolSubjects||[]);
+  // ref로 최신값 보장 (submit 클로저 이슈 방지)
+  const selectedSchoolRef=React.useRef(autoForm?.selectedSchool||null);
+  const schoolSubjectsRef=React.useRef(autoForm?.schoolSubjects||[]);
+  const setSelectedSchoolSafe=(v)=>{setSelectedSchool(v);selectedSchoolRef.current=v;};
+  const setSchoolSubjectsSafe=(v)=>{setSchoolSubjects(v);schoolSubjectsRef.current=v;};
 
   // 학교 검색
   const searchSchool=async()=>{
@@ -980,8 +985,8 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
   // 학교 선택 후 시간표 조회
   const selectSchool=async(school)=>{
     setSchoolModal(false);
-    setSelectedSchool(school);
-    setSchoolSubjects([]);
+    setSelectedSchoolSafe(school);
+    setSchoolSubjectsSafe([]);
     setForm(p=>({...p,schoolName:school.name}));
     try{
       // 고1 → 고2+고3 개설과목, 고2 → 고3 개설과목
@@ -993,8 +998,8 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
         const d=await r.json();
         (d.subjects||[]).forEach(s=>allSubjects.add(s));
       }
-      setSchoolSubjects([...allSubjects].sort());
-    }catch(e){setSchoolSubjects([]);}
+      setSchoolSubjectsSafe([...allSubjects].sort());
+    }catch(e){setSchoolSubjectsSafe([]);}
   };
   // 공유 링크로 접근 시 자동 제출
   useEffect(()=>{ if(autoForm&&autoForm.career&&autoForm.major) submit(); },[]);
@@ -1003,8 +1008,10 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
     setLoading(true);setError(null);setLstep(0);
     const t=setInterval(()=>setLstep(s=>s<LSTEPS.length-1?s+1:s),3500);
     const gradeLabel = form.grade==='1' ? '고1(고2~3 과목 추천 필요)' : '고2(고3 과목 추천 필요)';
-    const schoolCtx = selectedSchool && schoolSubjects.length > 0
-      ? `, 학교:${selectedSchool.name}(${selectedSchool.region}), 학년:${gradeLabel}, 해당학교 편제 개설과목:[${schoolSubjects.join(',')}]`
+    const _school = selectedSchoolRef.current;
+    const _subjects = schoolSubjectsRef.current;
+    const schoolCtx = _school && _subjects.length > 0
+      ? `, 학교:${_school.name}(${_school.region}), 학년:${gradeLabel}, 해당학교 편제 개설과목:[${_subjects.join(',')}]`
       : `, 학년:${gradeLabel}`;
     const msg=`${form.career?`희망진로:${form.career}, `:''}희망전공:${form.major}${form.university?`, 희망대학:${form.university}`:''}${schoolCtx}`;
     try{
@@ -1063,7 +1070,7 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
       const shareId=autoForm
         ? await saveResultTemp({results,form})
         : await saveResult({results,form});
-      onResult({results,form:({...form,selectedSchool,schoolSubjects}),shareId});
+      onResult({results,form:({...form,selectedSchool:selectedSchoolRef.current,schoolSubjects:schoolSubjectsRef.current}),shareId});
     }catch(e){
       clearInterval(t);
       const msg=String(e.message);
@@ -1109,7 +1116,7 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
             <div className="fp-school-row">
               <input className="fp-ctrl" placeholder="예: 성지고등학교" value={form.schoolName} onChange={set('schoolName')}
                 onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();searchSchool();}}}/>
-              <select className="fp-ctrl" value={form.grade} onChange={e=>{set('grade')(e);setSelectedSchool(null);setSchoolSubjects([]);}}>
+              <select className="fp-ctrl" value={form.grade} onChange={e=>{set('grade')(e);setSelectedSchoolSafe(null);setSchoolSubjectsSafe([]);}}>
                 <option value="1">고1</option>
                 <option value="2">고2</option>
               </select>
@@ -1239,7 +1246,7 @@ function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
   return(
     <div className="rp">
       <div className="rp-top">
-        {!isShared&&<button className="rp-home" onClick={()=>{history.pushState('','',location.pathname);onHome();}}>← 처음으로</button>}
+        <button className="rp-home" onClick={()=>{history.pushState('','',location.pathname);onHome();}}>← 처음으로</button>
         <div className="rp-ey">SUBJECT RECOMMENDER</div>
         <div className="rp-hd">큐리큘라</div>
         <div className="rp-hds">맞춤 과목 추천 결과</div>
@@ -1260,7 +1267,7 @@ function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
               {form.university&&<span className="chip">{form.university}</span>}
             </div>
             <div className="rp-btns">
-              {!isShared&&<button className="rb-lnk" onClick={copy} disabled={copying}>{copying?'생성 중...':'🔗 링크 복사'}</button>}
+              <button className="rb-lnk" onClick={copy} disabled={copying}>{copying?'생성 중...':'🔗 링크 복사'}</button>
               <button className="rb-pdf" onClick={printPage}>📄 PDF 저장</button>
               {!isShared&&<button className="rb-bk" onClick={onBack}>↩ 다시 입력</button>}
             </div>
