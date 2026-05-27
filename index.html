@@ -458,9 +458,9 @@ const saveResult = async (data) => {
   const id = btoa(unescape(encodeURIComponent(combo))).replace(/[^a-zA-Z0-9]/g,'').slice(0,12);
   const key = `curricula_${id}`;
   // 데이터 크기 최적화 (schoolSubjects는 편제표에만 사용, 저장 불필요)
-  // schoolSubjects 제외 저장 (크기 최적화 - 로딩 시 재조회)
+  // schoolSubjects 포함 저장 (새로고침 즉시 표시용, 과목명만 저장)
   const saveData = {
-    form: {...data.form, schoolSubjects: undefined},
+    form: data.form,
     results: data.results,
     savedAt: new Date().toISOString()
   };
