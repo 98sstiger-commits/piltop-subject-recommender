@@ -313,6 +313,19 @@
 .school-badge{display:inline-block;padding:2px 8px;background:var(--bg2);border-radius:20px;font-size:11px;color:var(--gold);margin-left:6px}
 .school-searching{text-align:center;padding:24px;color:#aaa;font-size:13px}
 .fp-school-row{display:grid;grid-template-columns:1fr 100px;gap:10px;margin-bottom:10px}
+.curr-wrap{margin-bottom:16px}
+.curr-toggle{width:100%;padding:11px 16px;background:#f8f5ec;border:1px solid #e0d8c0;border-radius:10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:var(--fb);font-size:13px;font-weight:700;color:#7a6228}
+.curr-toggle:hover{background:#f5f0e6}
+.curr-arrow{font-size:11px;transition:transform .2s}
+.curr-arrow.open{transform:rotate(180deg)}
+.curr-body{background:#fafaf8;border:1px solid #ede8de;border-radius:0 0 10px 10px;border-top:none;padding:14px 16px}
+.curr-cats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.curr-cat{background:#fff;border:1px solid #ede8de;border-radius:8px;padding:10px 12px}
+.curr-cat-name{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.08em;margin-bottom:6px}
+.curr-tags{display:flex;flex-wrap:wrap;gap:4px}
+.curr-tag{padding:2px 8px;background:#f5f0e6;border-radius:20px;font-size:11px;color:#7a6228}
+.curr-tag.matched{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+@media(max-width:640px){.curr-cats{grid-template-columns:repeat(2,1fr)}}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid rgba(200,162,48,.3);color:var(--gold);padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:300;white-space:nowrap;animation:toastIn .3s ease;max-width:90vw;text-align:center}
     @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
@@ -572,7 +585,8 @@ const SYSTEM = `당신은 2022 개정 교육과정(고교학점제) 선택과목
 {"overall_strategy":"3문장 전략(대학검증결과+전략+핵심과목)","subjects":[{"name":"과목명","category":"일반선택|진로선택|융합선택","priority":"필수|추천|선택","reason":"추천이유+등급방식 2문장","extracurricular":["세특주제1","세특주제2"]}]}
 
 총 8~12개: 필수 2~4개, 추천 3~5개, 선택 1~3개
-학년 구분 없이 고1~고3 전체 로드맵으로 추천. 학생이 자신의 학년에 맞게 선택할 수 있도록.
+고1 입력 시 → 고2·고3 전체 로드맵 과목 추천 (앞으로 선택해야 할 모든 과목)
+고2 입력 시 → 고3에서 선택해야 할 과목 중심으로 추천 (당장 다음 학년 집중)
 
 [전공별 필수과목 — 반드시 필수에 포함]
 의학·치의학·한의학: 화학(일반), 생명과학(일반), 미적분Ⅱ(진로)
@@ -655,6 +669,38 @@ const SYSTEM = `당신은 2022 개정 교육과정(고교학점제) 선택과목
 
 [일관성 규칙 — 반드시 준수]
 위 [전공별 필수과목] 목록에 명시된 과목은 priority를 반드시 "필수"로 설정. 절대 "추천"이나 "선택"으로 내리지 말 것. 매번 동일한 전공 입력 시 필수과목은 항상 동일하게 출력.`;
+
+// 과목 교과별 자동 분류
+const classifySubjects = (subjects) => {
+  const cats = {
+    '국어': ['국어','화법','독서','문학','작문','언어','매체','주제탐구'],
+    '수학': ['수학','대수','미적분','확률','통계','기하','경제수학','인공지능수학'],
+    '영어': ['영어','영미','심화영어','직무영어','미디어영어','세계문화'],
+    '사회': ['사회','역사','지리','정치','경제','법','윤리','세계사','한국사','인문학','국제'],
+    '과학': ['과학','물리','화학','생명','생물','지구','역학','전자기','물질','세포','유전','지구시스템','행성'],
+    '정보': ['정보','인공지능','데이터','소프트웨어'],
+    '기술·가정': ['기술','가정','로봇','공학','창의','아동','생애','발명'],
+    '예술': ['음악','미술','연극'],
+    '체육': ['체육','스포츠','운동'],
+    '교양': ['철학','심리','윤리','보건','환경','경제활동','논술','종교','논리'],
+    '제2외국어': ['일본어','중국어','프랑스어','독일어','스페인어','러시아어','아랍어','베트남어','한문'],
+  };
+  const result = {};
+  const used = new Set();
+  for(const [cat, keywords] of Object.entries(cats)){
+    const matched = subjects.filter(s=>
+      !used.has(s) && keywords.some(k=>s.replace(/\s/g,'').includes(k.replace(/\s/g,'')))
+    );
+    if(matched.length>0){
+      result[cat]=matched;
+      matched.forEach(s=>used.add(s));
+    }
+  }
+  // 미분류
+  const etc = subjects.filter(s=>!used.has(s));
+  if(etc.length>0) result['기타']=etc;
+  return result;
+};
 
 const LSTEPS=['진로·전공 분석','대학·학과 실시간 검색','2022 개정 과목 매칭','세특 탐구 주제 생성'];
 const PMETA={필수:{desc:'대학 권장 · 전공 직결'},추천:{desc:'진로 강력 연계'},선택:{desc:'보완 · 심화'}};
@@ -938,10 +984,16 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
     setSchoolSubjects([]);
     setForm(p=>({...p,schoolName:school.name}));
     try{
-      const r=await fetch('/api/school',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({action:'subjects',atpt_code:school.atpt_code,school_code:school.school_code,grade:form.grade})});
-      const d=await r.json();
-      setSchoolSubjects(d.subjects||[]);
+      // 고1 → 고2+고3 개설과목, 고2 → 고3 개설과목
+      const gradesToFetch = form.grade==='1' ? ['2','3'] : ['3'];
+      const allSubjects = new Set();
+      for(const g of gradesToFetch){
+        const r=await fetch('/api/school',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({action:'subjects',atpt_code:school.atpt_code,school_code:school.school_code,grade:g})});
+        const d=await r.json();
+        (d.subjects||[]).forEach(s=>allSubjects.add(s));
+      }
+      setSchoolSubjects([...allSubjects].sort());
     }catch(e){setSchoolSubjects([]);}
   };
   // 공유 링크로 접근 시 자동 제출
@@ -950,9 +1002,10 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
   const submit=async()=>{
     setLoading(true);setError(null);setLstep(0);
     const t=setInterval(()=>setLstep(s=>s<LSTEPS.length-1?s+1:s),3500);
+    const gradeLabel = form.grade==='1' ? '고1(고2~3 과목 추천 필요)' : '고2(고3 과목 추천 필요)';
     const schoolCtx = selectedSchool && schoolSubjects.length > 0
-      ? `, 학교:${selectedSchool.name}(${selectedSchool.region}) 고${form.grade} 개설과목:[${schoolSubjects.join(',')}]`
-      : '';
+      ? `, 학교:${selectedSchool.name}(${selectedSchool.region}), 학년:${gradeLabel}, 해당학교 편제 개설과목:[${schoolSubjects.join(',')}]`
+      : `, 학년:${gradeLabel}`;
     const msg=`${form.career?`희망진로:${form.career}, `:''}희망전공:${form.major}${form.university?`, 희망대학:${form.university}`:''}${schoolCtx}`;
     try{
       const res=await fetch('/api/proxy',{method:'POST',headers:{'Content-Type':'application/json'},
@@ -1059,7 +1112,6 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
               <select className="fp-ctrl" value={form.grade} onChange={e=>{set('grade')(e);setSelectedSchool(null);setSchoolSubjects([]);}}>
                 <option value="1">고1</option>
                 <option value="2">고2</option>
-                <option value="3">고3</option>
               </select>
             </div>
             {form.schoolName&&<button type="button" onClick={searchSchool}
@@ -1099,6 +1151,40 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
           <div className="fp-note">🔍 웹 검색으로 최신 대학 권장과목 반영 · 20~30초 소요</div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function CurriculumPanel({school,subjects,recommended}){
+  const [open,setOpen]=React.useState(false);
+  const cats=classifySubjects(subjects);
+  const recSet=new Set(recommended);
+  return(
+    <div className="curr-wrap">
+      <button className="curr-toggle" onClick={()=>setOpen(o=>!o)}>
+        <span>🏫 {school.name} 편제표 ({subjects.length}과목)</span>
+        <span className={`curr-arrow${open?' open':''}`}>▼</span>
+      </button>
+      {open&&(
+        <div className="curr-body">
+          <div className="curr-cats">
+            {Object.entries(cats).map(([cat,subs],i)=>(
+              <div key={i} className="curr-cat">
+                <div className="curr-cat-name">{cat}</div>
+                <div className="curr-tags">
+                  {subs.map((s,j)=>(
+                    <span key={j} className={`curr-tag${recSet.has(s)?' matched':''}`}>{s}</span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{marginTop:10,fontSize:11,color:'#aaa'}}>
+            <span style={{display:'inline-block',width:10,height:10,background:'#dcfce7',border:'1px solid #bbf7d0',borderRadius:3,marginRight:4}}/>
+            추천 과목과 일치하는 개설과목
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1169,6 +1255,7 @@ function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
             <div className="chips">
               {form.career&&<span className="chip">{form.career}</span>}
               <span className="chip">{form.major}</span>
+              {form.grade&&<span className="chip">고{form.grade}</span>}
               {form.selectedSchool&&<span className="chip">🏫 {form.selectedSchool.name}</span>}
               {form.university&&<span className="chip">{form.university}</span>}
             </div>
@@ -1178,6 +1265,9 @@ function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
               {!isShared&&<button className="rb-bk" onClick={onBack}>↩ 다시 입력</button>}
             </div>
           </div>
+          {form.selectedSchool&&form.schoolSubjects&&form.schoolSubjects.length>0&&(
+            <CurriculumPanel school={form.selectedSchool} subjects={form.schoolSubjects} recommended={(results.subjects||[]).map(s=>s.name)}/>
+          )}
           <div className="strat"><div className="strat-l">과목 선택 전략</div><p className="strat-t">{results.overall_strategy}</p></div>
           {['필수','추천','선택'].map(p=><PSection key={p} priority={p} subjects={results.subjects||[]}/>)}
           <div className="rp-footer">2022 개정 교육과정 기준 · 웹 검색 기반 대학 권장과목 반영 · 반드시 각 대학 입학처에서 최신 정보를 확인하세요 · 필탑학원</div>
