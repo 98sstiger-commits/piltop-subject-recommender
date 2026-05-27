@@ -1,15 +1,13 @@
 const NEIS_KEY = '0e64c7c2b82142bfa57843bdb1b2d98f';
 const BASE = 'https://open.neis.go.kr/hub';
 
-// 2015개정 과목명 (제외)
-const OLD_CURRICULUM = ['물리학Ⅱ','화학Ⅱ','생명과학Ⅱ','지구과학Ⅱ'];
-
-// 과목이 아닌 키워드들
 const NON_SUBJECT_PATTERNS = [
-  '지필평가','수행평가','고사','시험','평가일','평가기간',
+  '지필평가','수행평가','고사','시험','평가일','연합학력평가','전국연합',
+  '모의고사','학력평가','진단평가','성취도평가',
   '활동','행사','총회','축제','캠프','견학','봉사',
   '조회','기념일','휴업일','재량','자율','토요',
-  '학부모','보강','대체','노동절','어린이날','자기주도'
+  '학부모','보강','대체','노동절','어린이날','자기주도',
+  '졸업','입학','수학여행','현장체험'
 ];
 
 function isValidSubject(s) {
@@ -17,7 +15,6 @@ function isValidSubject(s) {
   if (s.startsWith('[')) return false;
   if (!/[가-힣]/.test(s)) return false;
   if (NON_SUBJECT_PATTERNS.some(k => s.includes(k))) return false;
-  if (OLD_CURRICULUM.some(k => s.includes(k))) return false;
   return true;
 }
 
