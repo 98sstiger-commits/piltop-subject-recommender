@@ -326,6 +326,9 @@
 .curr-tag{padding:2px 8px;background:#f5f0e6;border-radius:20px;font-size:11px;color:#7a6228}
 .curr-tag.matched{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
 @media(max-width:640px){.curr-cats{grid-template-columns:repeat(2,1fr)}}
+.sbadge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;margin-left:6px}
+.sbadge-ok{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+.sbadge-warn{background:#fef9c3;color:#854d0e;border:1px solid #fde047}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid rgba(200,162,48,.3);color:var(--gold);padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:300;white-space:nowrap;animation:toastIn .3s ease;max-width:90vw;text-align:center}
     @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
@@ -672,6 +675,17 @@ const SYSTEM = `당신은 2022 개정 교육과정(고교학점제) 선택과목
 위 [전공별 필수과목] 목록에 명시된 과목은 priority를 반드시 "필수"로 설정. 절대 "추천"이나 "선택"으로 내리지 말 것. 매번 동일한 전공 입력 시 필수과목은 항상 동일하게 출력.`;
 
 // 과목 교과별 자동 분류
+// 학교 개설과목 여부 확인 (포함관계 매칭)
+const isSchoolSubject = (name, schoolSubjects) => {
+  if(!schoolSubjects||schoolSubjects.length===0) return false;
+  const clean = s => s.replace(/[\s()（）\[\]]/g,'').replace(/[ⅠⅡⅢⅣⅤⅥ]/g,'').toLowerCase();
+  const nc = clean(name);
+  return schoolSubjects.some(s => {
+    const sc = clean(s);
+    return sc.includes(nc) || nc.includes(sc);
+  });
+};
+
 const classifySubjects = (subjects) => {
   const cats = {
     '국어': ['국어','화법','독서','문학','작문','언어','매체','주제탐구'],
@@ -1192,9 +1206,15 @@ function CurriculumPanel({school,subjects,recommended}){
               </div>
             ))}
           </div>
-          <div style={{marginTop:10,fontSize:11,color:'#aaa'}}>
-            <span style={{display:'inline-block',width:10,height:10,background:'#dcfce7',border:'1px solid #bbf7d0',borderRadius:3,marginRight:4}}/>
-            추천 과목과 일치하는 개설과목
+          <div style={{marginTop:10,display:'flex',gap:12,flexWrap:'wrap'}}>
+            <span style={{fontSize:11,color:'#666',display:'flex',alignItems:'center',gap:4}}>
+              <span style={{display:'inline-block',width:10,height:10,background:'#dcfce7',border:'1px solid #bbf7d0',borderRadius:3}}/>
+              연두색 = 추천 과목과 일치하는 개설과목
+            </span>
+            <span style={{fontSize:11,color:'#666',display:'flex',alignItems:'center',gap:4}}>
+              <span style={{display:'inline-block',width:10,height:10,background:'#fafaf8',border:'1px solid #ede8de',borderRadius:3}}/>
+              흰색 = 개설은 됐지만 추천 안 된 과목
+            </span>
           </div>
         </div>
       )}
@@ -1202,7 +1222,7 @@ function CurriculumPanel({school,subjects,recommended}){
   );
 }
 
-function PSection({priority,subjects}){
+function PSection({priority,subjects,schoolSubjects}){
   const list=subjects.filter(s=>s.priority===priority);
   if(!list.length) return null;
   return(
@@ -1211,7 +1231,15 @@ function PSection({priority,subjects}){
       <div className={`sc-${priority}`}>
         {list.map((s,i)=>(
           <div key={i} className="scard">
-            <div className="sc-top"><span className="sname">{s.name}</span><span className={catCls(s.category)}>{s.category}</span></div>
+            <div className="sc-top">
+              <span className="sname">{s.name}</span>
+              <span className={catCls(s.category)}>{s.category}</span>
+              {schoolSubjects&&schoolSubjects.length>0&&(
+                isSchoolSubject(s.name,schoolSubjects)
+                  ?<span className="sbadge sbadge-ok">✅ 이 학교 개설</span>
+                  :<span className="sbadge sbadge-warn">⚠️ 공동교육과정</span>
+              )}
+            </div>
             <p className="sreason">{s.reason}</p>
             <div className="ext-l">세특 탐구 주제</div>
             <ul className="ext-list">{(s.extracurricular||[]).map((t,j)=>(<li key={j} className="ext-item"><span className="ext-dot"/>{t}</li>))}</ul>
@@ -1282,7 +1310,7 @@ function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
             <CurriculumPanel school={form.selectedSchool} subjects={form.schoolSubjects} recommended={(results.subjects||[]).map(s=>s.name)}/>
           )}
           <div className="strat"><div className="strat-l">과목 선택 전략</div><p className="strat-t">{results.overall_strategy}</p></div>
-          {['필수','추천','선택'].map(p=><PSection key={p} priority={p} subjects={results.subjects||[]}/>)}
+          {['필수','추천','선택'].map(p=><PSection key={p} priority={p} subjects={results.subjects||[]} schoolSubjects={form.schoolSubjects||[]}/>)}
           <div className="rp-footer">2022 개정 교육과정 기준 · 웹 검색 기반 대학 권장과목 반영 · 반드시 각 대학 입학처에서 최신 정보를 확인하세요 · 필탑학원</div>
         </div>
       </div>
