@@ -458,8 +458,9 @@ const saveResult = async (data) => {
   const id = btoa(unescape(encodeURIComponent(combo))).replace(/[^a-zA-Z0-9]/g,'').slice(0,12);
   const key = `curricula_${id}`;
   // 데이터 크기 최적화 (schoolSubjects는 편제표에만 사용, 저장 불필요)
+  // schoolSubjects 포함 저장 (편제표 표시용)
   const saveData = {
-    form: {...data.form, schoolSubjects:undefined},
+    form: data.form,
     results: data.results,
     savedAt: new Date().toISOString()
   };
@@ -596,7 +597,10 @@ const SYSTEM = `당신은 2022 개정 교육과정(고교학점제) 선택과목
 [STEP 2 — 결과 JSON]
 {"overall_strategy":"3문장 전략(대학검증결과+전략+핵심과목)","subjects":[{"name":"과목명","category":"일반선택|진로선택|융합선택","priority":"필수|추천|선택","reason":"추천이유+등급방식 2문장","extracurricular":["세특주제1","세특주제2"],"schoolAvailable":true}]}
 
-schoolAvailable 규칙: 학교 개설과목 목록이 제공된 경우 → 해당 과목이 목록에 있으면 true, 없으면 false. 목록 미제공 시 → null 또는 필드 생략.
+schoolAvailable 필드 규칙 (반드시 포함):
+- 학교 편제 개설과목이 제공된 경우: 해당 과목명 또는 유사 과목명이 목록에 있으면 true, 없으면 false
+- 학교 데이터 미제공 시: 필드 생략 또는 null
+- 판단 기준: 띄어쓰기·괄호·표기 차이 무시하고 의미상 같으면 true (예: "확률과 통계" = "확률과통계")
 
 총 8~12개: 필수 2~4개, 추천 3~5개, 선택 1~3개
 고1 입력 시 → 고2·고3 전체 로드맵 과목 추천 (선택 가능한 모든 과목 기준)
@@ -1339,7 +1343,8 @@ function App(){
     const params=new URLSearchParams(location.search);
     const rid=params.get('r');
     const did=params.get('d');
-    console.log('URL params:', {rid, did, search:location.search});
+    const isSharedParam=params.get('shared')==='1';
+    console.log('URL params:', {rid, did, isSharedParam, search:location.search});
     if(rid){
       setLoading(true);
       loadResult(rid).then(d=>{
@@ -1351,8 +1356,9 @@ function App(){
             setSharedMode(true);
             setPage('form');
           } else if(d?.results&&d?.form){
-            let isOwner=false;try{isOwner=!!localStorage.getItem('owner_'+rid);}catch(e){}
-          setRdata({...d,shareId:rid,isShared:!isOwner});
+            // shared=1 파라미터 있으면 학생 뷰 (PDF만)
+          // 없으면 원장 뷰 (모든 버튼)
+          setRdata({...d,shareId:rid,isShared:isSharedParam});
             setPage('results');
           }
         }
