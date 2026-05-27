@@ -1060,10 +1060,23 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
       : `, 학년:${gradeLabel}`;
     const msg=`${form.career?`희망진로:${form.career}, `:''}희망전공:${form.major}${form.university?`, 희망대학:${form.university}`:''}${schoolCtx}`;
     try{
-      const res=await fetch('/api/proxy',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:4000,system:SYSTEM,
-          tools:[{type:'web_search_20250305',name:'web_search'}],
-          messages:[{role:'user',content:msg}]})});
+      // AI 호출 + 학교 편제표 조회 동시 병렬 실행
+      const schoolFetch = selectedSchoolRef.current?.atpt_code
+        ? fetch('/api/school',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({action:'subjects',atpt_code:selectedSchoolRef.current.atpt_code,school_code:selectedSchoolRef.current.school_code,grade:['2','3']})})
+            .then(r=>r.json()).then(d=>d.subjects||[]).catch(()=>[])
+        : Promise.resolve([]);
+
+      const [res, fetchedSubjects] = await Promise.all([
+        fetch('/api/proxy',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:4000,system:SYSTEM,
+            tools:[{type:'web_search_20250305',name:'web_search'}],
+            messages:[{role:'user',content:msg}]})}),
+        schoolFetch
+      ]);
+
+      // 편제표 결과 즉시 반영
+      if(fetchedSubjects.length>0) setSchoolSubjectsSafe(fetchedSubjects);
       const data=await res.json();
       if(!res.ok) throw new Error(data?.error?.message||data?.error||`오류 ${res.status}`);
       const raw=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text||'').join('');
