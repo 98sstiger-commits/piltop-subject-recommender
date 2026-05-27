@@ -1326,7 +1326,12 @@ function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
       fetch('/api/school',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({action:'subjects',atpt_code:sc.atpt_code,school_code:sc.school_code,grade:['2','3']})})
       .then(r=>r.json())
-      .then(d=>{ if(d.subjects?.length>0) setSchoolSubjects(d.subjects); })
+      .then(d=>{
+        if(d.subjects?.length>0){
+          setSchoolSubjects(d.subjects);
+          if(cacheKey) try{sessionStorage.setItem(cacheKey,JSON.stringify(d.subjects));}catch(e){}
+        }
+      })
       .catch(()=>{});
     }
   },[]);
@@ -1466,7 +1471,13 @@ function App(){
       const url=d.shareId?makeShareUrl(d.shareId):makeFormShareUrl(d.form);
       if(url){
         history.pushState('','',url);
-        if(d.shareId){try{localStorage.setItem('owner_'+d.shareId,'1');}catch(e){}}
+        if(d.shareId){
+          try{localStorage.setItem('owner_'+d.shareId,'1');}catch(e){}
+          // schoolSubjects sessionStorage 캐시
+          if(d.form?.schoolSubjects?.length>0){
+            try{sessionStorage.setItem('sc_'+d.shareId,JSON.stringify(d.form.schoolSubjects));}catch(e){}
+          }
+        }
       }
     }
     window.scrollTo(0,0);
