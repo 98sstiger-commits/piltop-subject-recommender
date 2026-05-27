@@ -458,9 +458,9 @@ const saveResult = async (data) => {
   const id = btoa(unescape(encodeURIComponent(combo))).replace(/[^a-zA-Z0-9]/g,'').slice(0,12);
   const key = `curricula_${id}`;
   // 데이터 크기 최적화 (schoolSubjects는 편제표에만 사용, 저장 불필요)
-  // schoolSubjects 포함 저장 (편제표 표시용)
+  // schoolSubjects 제외 저장 (크기 최적화 - 로딩 시 재조회)
   const saveData = {
-    form: data.form,
+    form: {...data.form, schoolSubjects: undefined},
     results: data.results,
     savedAt: new Date().toISOString()
   };
@@ -1276,9 +1276,11 @@ function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
 
   // 새로고침 시 schoolSubjects 없으면 자동 재조회
   React.useEffect(()=>{
-    if(form.selectedSchool&&(!form.schoolSubjects||form.schoolSubjects.length===0)){
+    const sc=form.selectedSchool;
+    // schoolSubjects 없을 때 항상 자동 재조회 (새로고침/공유링크 모두)
+    if(sc?.atpt_code&&sc?.school_code&&schoolSubjects.length===0){
       fetch('/api/school',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({action:'subjects',atpt_code:form.selectedSchool.atpt_code,school_code:form.selectedSchool.school_code,grade:['2','3']})})
+        body:JSON.stringify({action:'subjects',atpt_code:sc.atpt_code,school_code:sc.school_code,grade:['2','3']})})
       .then(r=>r.json())
       .then(d=>{ if(d.subjects?.length>0) setSchoolSubjects(d.subjects); })
       .catch(()=>{});
