@@ -1221,16 +1221,24 @@ function CurriculumPanel({school,subjects,recommended}){
               </div>
             ))}
           </div>
-          <div style={{marginTop:10,display:'flex',gap:12,flexWrap:'wrap'}}>
-            <span style={{fontSize:11,color:'#666',display:'flex',alignItems:'center',gap:4}}>
-              <span style={{display:'inline-block',width:10,height:10,background:'#dcfce7',border:'1px solid #bbf7d0',borderRadius:3}}/>
-              연두색 = 추천 과목과 일치하는 개설과목
-            </span>
-            <span style={{fontSize:11,color:'#666',display:'flex',alignItems:'center',gap:4}}>
-              <span style={{display:'inline-block',width:10,height:10,background:'#fafaf8',border:'1px solid #ede8de',borderRadius:3}}/>
-              흰색 = 개설은 됐지만 추천 안 된 과목
-            </span>
+          <div style={{marginTop:12,display:'flex',alignItems:'center',gap:6,marginBottom:10}}>
+            <span style={{display:'inline-block',width:10,height:10,background:'#dcfce7',border:'1px solid #bbf7d0',borderRadius:3,flexShrink:0}}/>
+            <span style={{fontSize:11,color:'#666'}}>연두색 = 추천 과목 중 이 학교에 개설된 과목</span>
           </div>
+          {(()=>{
+            const missing=recommended.filter(r=>!isMatched(r));
+            if(missing.length===0) return null;
+            return(
+              <div style={{background:'#fffbeb',border:'1px solid #fde68a',borderRadius:8,padding:'10px 14px'}}>
+                <div style={{fontSize:12,fontWeight:700,color:'#92400e',marginBottom:6}}>⚠️ 추천 과목 중 이 학교 미개설 — 공동교육과정 필요</div>
+                <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
+                  {missing.map((s,i)=>(
+                    <span key={i} style={{padding:'2px 10px',background:'#fef3c7',border:'1px solid #fde68a',borderRadius:20,fontSize:12,color:'#92400e',fontWeight:600}}>{s}</span>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>
@@ -1264,6 +1272,18 @@ function PSection({priority,subjects}){
 
 function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
   const [toast,setToast]=useState('');
+  const [schoolSubjects,setSchoolSubjects]=React.useState(form.schoolSubjects||[]);
+
+  // 새로고침 시 schoolSubjects 없으면 자동 재조회
+  React.useEffect(()=>{
+    if(form.selectedSchool&&(!form.schoolSubjects||form.schoolSubjects.length===0)){
+      fetch('/api/school',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({action:'subjects',atpt_code:form.selectedSchool.atpt_code,school_code:form.selectedSchool.school_code,grade:['2','3']})})
+      .then(r=>r.json())
+      .then(d=>{ if(d.subjects?.length>0) setSchoolSubjects(d.subjects); })
+      .catch(()=>{});
+    }
+  },[]);
   const total=(results.subjects||[]).length;
   const 필수cnt=(results.subjects||[]).filter(s=>s.priority==='필수').length;
   const 추천cnt=(results.subjects||[]).filter(s=>s.priority==='추천').length;
@@ -1318,8 +1338,8 @@ function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
               {!isShared&&<button className="rb-bk" onClick={onBack}>↩ 다시 입력</button>}
             </div>
           </div>
-          {form.selectedSchool&&form.schoolSubjects&&form.schoolSubjects.length>0&&(
-            <CurriculumPanel school={form.selectedSchool} subjects={form.schoolSubjects} recommended={(results.subjects||[]).map(s=>s.name)}/>
+          {form.selectedSchool&&schoolSubjects.length>0&&(
+            <CurriculumPanel school={form.selectedSchool} subjects={schoolSubjects} recommended={(results.subjects||[]).map(s=>s.name)}/>
           )}
           <div className="strat"><div className="strat-l">과목 선택 전략</div><p className="strat-t">{results.overall_strategy}</p></div>
           {['필수','추천','선택'].map(p=><PSection key={p} priority={p} subjects={results.subjects||[]}/>)}
