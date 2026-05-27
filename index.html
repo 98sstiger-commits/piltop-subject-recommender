@@ -1099,7 +1099,13 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
       const shareId=autoForm
         ? await saveResultTemp({results,form})
         : await saveResult({results,form});
-      onResult({results,form:({...form,selectedSchool:selectedSchoolRef.current,schoolSubjects:schoolSubjectsRef.current}),shareId});
+      const selSchool=selectedSchoolRef.current;
+      const formToSave={
+        career:form.career, major:form.major, university:form.university,
+        grade:form.grade, schoolName:form.schoolName,
+        selectedSchool:selSchool?{name:selSchool.name,atpt_code:selSchool.atpt_code,school_code:selSchool.school_code,region:selSchool.region}:null
+      };
+      onResult({results,form:formToSave,shareId});
     }catch(e){
       clearInterval(t);
       const msg=String(e.message);
@@ -1274,10 +1280,8 @@ function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
   const [toast,setToast]=useState('');
   const [schoolSubjects,setSchoolSubjects]=React.useState(form.schoolSubjects||[]);
 
-  // 새로고침 시 schoolSubjects 없으면 자동 재조회
   React.useEffect(()=>{
     const sc=form.selectedSchool;
-    // schoolSubjects 없을 때 항상 자동 재조회 (새로고침/공유링크 모두)
     if(sc?.atpt_code&&sc?.school_code&&schoolSubjects.length===0){
       fetch('/api/school',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({action:'subjects',atpt_code:sc.atpt_code,school_code:sc.school_code,grade:['2','3']})})
@@ -1286,6 +1290,15 @@ function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
       .catch(()=>{});
     }
   },[]);
+
+  // 클라이언트 사이드에서 schoolAvailable 계산 (AI 판단보다 정확)
+  const computedSubjects=React.useMemo(()=>{
+    if(!schoolSubjects.length) return results.subjects||[];
+    return (results.subjects||[]).map(s=>({
+      ...s,
+      schoolAvailable: isSchoolSubject(s.name, schoolSubjects)
+    }));
+  },[results.subjects, schoolSubjects]);
   const total=(results.subjects||[]).length;
   const 필수cnt=(results.subjects||[]).filter(s=>s.priority==='필수').length;
   const 추천cnt=(results.subjects||[]).filter(s=>s.priority==='추천').length;
