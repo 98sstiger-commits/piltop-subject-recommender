@@ -1,6 +1,9 @@
 const NEIS_KEY = '0e64c7c2b82142bfa57843bdb1b2d98f';
 const BASE = 'https://open.neis.go.kr/hub';
 
+// 비과목 키워드 (시간표에 나오지만 선택과목 아닌 것)
+const NON_SUBJECTS = ['활동','행사','총회','축제','캠프','체험','견학','봉사','조회','기념일','휴업일','재량','자율','토요','학부모','보강','대체','문화체험','진로활동'];
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -11,7 +14,7 @@ export default async function handler(req, res) {
   const { action, schoolName, atpt_code, school_code, grade } = req.body;
 
   try {
-    // ── 학교 검색 ──────────────────────────────────
+    // ── 학교 검색 ──
     if (action === 'search') {
       const params = new URLSearchParams({
         KEY: NEIS_KEY, Type: 'json', pIndex: 1, pSize: 20,
@@ -31,14 +34,14 @@ export default async function handler(req, res) {
       return res.status(200).json({ schools });
     }
 
-    // ── 개설과목 추출 (특정 학년) ──────────────────
+    // ── 개설과목 추출 ──
     if (action === 'subjects') {
       const year = new Date().getFullYear();
       const subjects = new Set();
 
-      // 1학기 + 2학기 조회, pSize=1000으로 최대 2페이지
+      // 1학기 + 2학기, 최대 5페이지까지 조회해 전체 과목 수집
       for (const sem of ['1', '2']) {
-        for (const pIndex of [1, 2]) {
+        for (let pIndex = 1; pIndex <= 5; pIndex++) {
           const params = new URLSearchParams({
             KEY: NEIS_KEY, Type: 'json',
             pIndex, pSize: 1000,
@@ -50,10 +53,19 @@ export default async function handler(req, res) {
           const d = await r.json();
           const rows = d?.hisTimetable?.[1]?.row || [];
           if (rows.length === 0) break;
+
           rows.forEach(row => {
-            const s = row.ITRT_CNTNT;
-            if (s && !s.startsWith('[') && s.trim()) subjects.add(s.trim());
+            const s = (row.ITRT_CNTNT || '').trim();
+            if (!s || s.startsWith('[')) return;
+            // 비과목 필터링
+            if (NON_SUBJECTS.some(k => s.includes(k))) return;
+            // 한글 포함 여부 확인 (과목명은 한글 포함)
+            if (!/[가-힣]/.test(s)) return;
+            // 너무 짧은 것 제외
+            if (s.length < 2) return;
+            subjects.add(s);
           });
+
           if (rows.length < 1000) break;
         }
       }
