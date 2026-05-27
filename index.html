@@ -991,17 +991,14 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
     setSchoolSubjectsSafe([]);
     setForm(p=>({...p,schoolName:school.name}));
     try{
-      // 2022 개정 교육과정 적용된 학년은 현재 고2까지
-      // 고3은 아직 2015 개정 → 고2 시간표만 사용
-      const gradesToFetch = ['2'];
-      const allSubjects = new Set();
-      for(const g of gradesToFetch){
-        const r=await fetch('/api/school',{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({action:'subjects',atpt_code:school.atpt_code,school_code:school.school_code,grade:g})});
-        const d=await r.json();
-        (d.subjects||[]).forEach(s=>allSubjects.add(s));
-      }
-      setSchoolSubjectsSafe([...allSubjects].sort());
+      // 고교학점제 선도학교는 고3도 2022 개정 → 고2+고3 모두 조회
+      // (2022 개정 아닌 학교는 school.js에서 2015과목 자동 필터링)
+      const gradesToFetch = ['2', '3'];
+      // 한 번의 API 호출로 여러 학년 조회
+      const r=await fetch('/api/school',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({action:'subjects',atpt_code:school.atpt_code,school_code:school.school_code,grade:gradesToFetch})});
+      const d=await r.json();
+      setSchoolSubjectsSafe((d.subjects||[]).sort());
     }catch(e){setSchoolSubjectsSafe([]);}
   };
   // 공유 링크로 접근 시 자동 제출
@@ -1255,7 +1252,7 @@ function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
   return(
     <div className="rp">
       <div className="rp-top">
-        <button className="rp-home" onClick={()=>{history.pushState('','',location.pathname);onHome();}}>← 처음으로</button>
+        {!isShared&&<button className="rp-home" onClick={()=>{history.pushState('','',location.pathname);onHome();}}>← 처음으로</button>}
         <div className="rp-ey">SUBJECT RECOMMENDER</div>
         <div className="rp-hd">큐리큘라</div>
         <div className="rp-hds">맞춤 과목 추천 결과</div>
@@ -1318,7 +1315,8 @@ function App(){
             setSharedMode(true);
             setPage('form');
           } else if(d?.results&&d?.form){
-            setRdata({...d,shareId:rid,isShared:true});
+            let isOwner=false;try{isOwner=!!localStorage.getItem('owner_'+rid);}catch(e){}
+          setRdata({...d,shareId:rid,isShared:!isOwner});
             setPage('results');
           }
         }
@@ -1347,7 +1345,10 @@ function App(){
     setPage('results');
     if(!sharedMode){
       const url=d.shareId?makeShareUrl(d.shareId):makeFormShareUrl(d.form);
-      if(url) history.pushState('','',url);
+      if(url){
+        history.pushState('','',url);
+        if(d.shareId){try{localStorage.setItem('owner_'+d.shareId,'1');}catch(e){}}
+      }
     }
     window.scrollTo(0,0);
   };
