@@ -302,7 +302,18 @@
     .ext-dot{width:3px;height:3px;background:var(--gold);border-radius:50%;margin-top:5px;flex-shrink:0}
     .rp-footer{margin-top:20px;text-align:center;font-size:12px;color:#bbb;line-height:1.7}
 
-    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid rgba(200,162,48,.3);color:var(--gold);padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:300;white-space:nowrap;animation:toastIn .3s ease;max-width:90vw;text-align:center}
+    .school-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+.school-modal-box{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.2)}
+.school-modal-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px}
+.school-modal-sub{font-size:12px;color:#aaa;margin-bottom:14px}
+.school-item{padding:12px 14px;border:1.5px solid #ede8de;border-radius:10px;margin-bottom:8px;cursor:pointer;transition:border-color .15s,background .15s}
+.school-item:hover{border-color:var(--gold);background:#fdf8ee}
+.school-item-name{font-size:15px;font-weight:700;color:var(--text)}
+.school-item-addr{font-size:12px;color:#aaa;margin-top:2px}
+.school-badge{display:inline-block;padding:2px 8px;background:var(--bg2);border-radius:20px;font-size:11px;color:var(--gold);margin-left:6px}
+.school-searching{text-align:center;padding:24px;color:#aaa;font-size:13px}
+.fp-school-row{display:grid;grid-template-columns:1fr 100px;gap:10px;margin-bottom:10px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid rgba(200,162,48,.3);color:var(--gold);padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:300;white-space:nowrap;animation:toastIn .3s ease;max-width:90vw;text-align:center}
     @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
     /* ── RESPONSIVE ── */
@@ -636,6 +647,12 @@ const SYSTEM = `당신은 2022 개정 교육과정(고교학점제) 선택과목
 
 순수 JSON만 반환. 마크다운 없이. HTML태그·cite태그 절대 금지. JSON 문자열 내 줄바꿈 금지. reason은 2문장 이내로 간결하게.
 
+[학교 개설과목 기반 추천 — 학교 정보가 제공된 경우]
+개설과목 목록이 제공되면 반드시 아래 기준으로 추천:
+1. 개설과목에 있는 과목 → reason에 "해당 학교에 개설된 과목으로 반드시 선택하세요." 포함
+2. 개설과목에 없지만 전공에 필수인 과목 → reason에 "이 학교에 개설되지 않은 과목입니다. 공동교육과정이나 온라인 공동교육과정을 통해 이수를 권장합니다." 포함
+3. 개설과목에 없고 굳이 필수가 아닌 과목 → 추천 목록에서 제외
+
 [일관성 규칙 — 반드시 준수]
 위 [전공별 필수과목] 목록에 명시된 과목은 priority를 반드시 "필수"로 설정. 절대 "추천"이나 "선택"으로 내리지 말 것. 매번 동일한 전공 입력 시 필수과목은 항상 동일하게 출력.`;
 
@@ -885,19 +902,58 @@ function HistoryPage({onBack,onSelect}){
 }
 
 function FormPage({onBack,onResult,autoForm,onHistory}){
-  const [form,setForm]=useState(autoForm||{career:'',major:'',university:''});
+  const [form,setForm]=useState(autoForm||{career:'',major:'',university:'',schoolName:'',grade:'2'});
   const [error,setError]=useState(null);
   const [loading,setLoading]=useState(false);
   const [lstep,setLstep]=useState(0);
   const set=k=>e=>setForm(p=>({...p,[k]:e.target.value}));
   const valid=form.major.trim();
+
+  // 학교 검색 관련 state
+  const [schoolList,setSchoolList]=React.useState([]);
+  const [schoolModal,setSchoolModal]=React.useState(false);
+  const [schoolSearching,setSchoolSearching]=React.useState(false);
+  const [selectedSchool,setSelectedSchool]=React.useState(autoForm?.selectedSchool||null);
+  const [schoolSubjects,setSchoolSubjects]=React.useState(autoForm?.schoolSubjects||[]);
+
+  // 학교 검색
+  const searchSchool=async()=>{
+    if(!form.schoolName.trim()) return;
+    setSchoolSearching(true);
+    setSchoolModal(true);
+    setSchoolList([]);
+    try{
+      const r=await fetch('/api/school',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({action:'search',schoolName:form.schoolName.trim()})});
+      const d=await r.json();
+      setSchoolList(d.schools||[]);
+    }catch(e){setSchoolList([]);}
+    setSchoolSearching(false);
+  };
+
+  // 학교 선택 후 시간표 조회
+  const selectSchool=async(school)=>{
+    setSchoolModal(false);
+    setSelectedSchool(school);
+    setSchoolSubjects([]);
+    setForm(p=>({...p,schoolName:school.name}));
+    try{
+      const r=await fetch('/api/school',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({action:'subjects',atpt_code:school.atpt_code,school_code:school.school_code,grade:form.grade})});
+      const d=await r.json();
+      setSchoolSubjects(d.subjects||[]);
+    }catch(e){setSchoolSubjects([]);}
+  };
   // 공유 링크로 접근 시 자동 제출
   useEffect(()=>{ if(autoForm&&autoForm.career&&autoForm.major) submit(); },[]);
 
   const submit=async()=>{
     setLoading(true);setError(null);setLstep(0);
     const t=setInterval(()=>setLstep(s=>s<LSTEPS.length-1?s+1:s),3500);
-    const msg=`${form.career?`희망진로:${form.career}, `:''}희망전공:${form.major}${form.university?`, 희망대학:${form.university}`:''}`;
+    const schoolCtx = selectedSchool && schoolSubjects.length > 0
+      ? `, 학교:${selectedSchool.name}(${selectedSchool.region}) 고${form.grade} 개설과목:[${schoolSubjects.join(',')}]`
+      : '';
+    const msg=`${form.career?`희망진로:${form.career}, `:''}희망전공:${form.major}${form.university?`, 희망대학:${form.university}`:''}${schoolCtx}`;
     try{
       const res=await fetch('/api/proxy',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:4000,system:SYSTEM,
@@ -954,7 +1010,7 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
       const shareId=autoForm
         ? await saveResultTemp({results,form})
         : await saveResult({results,form});
-      onResult({results,form,shareId});
+      onResult({results,form:({...form,selectedSchool,schoolSubjects}),shareId});
     }catch(e){
       clearInterval(t);
       const msg=String(e.message);
@@ -995,6 +1051,26 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
             <div className="fp-grp"><label className="fp-lbl">희망 진로 <span style={{color:"#bbb",fontWeight:400}}>선택</span></label><input className="fp-ctrl" placeholder="예: 의사, 소프트웨어 엔지니어…" value={form.career} onChange={set('career')}/></div>
             <div className="fp-grp"><label className="fp-lbl">희망 전공<span className="req">*</span></label><input className="fp-ctrl" placeholder="예: 의학과, 컴퓨터공학과…" value={form.major} onChange={set('major')}/></div>
           </div>
+          <div className="fp-full" style={{marginBottom:10}}>
+            <label className="fp-full-lbl">재학 학교 <span style={{fontWeight:400,color:'#bbb'}}>선택 — 입력 시 학교 개설과목 기반 맞춤 추천</span></label>
+            <div className="fp-school-row">
+              <input className="fp-ctrl" placeholder="예: 성지고등학교" value={form.schoolName} onChange={set('schoolName')}
+                onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();searchSchool();}}}/>
+              <select className="fp-ctrl" value={form.grade} onChange={e=>{set('grade')(e);setSelectedSchool(null);setSchoolSubjects([]);}}>
+                <option value="1">고1</option>
+                <option value="2">고2</option>
+                <option value="3">고3</option>
+              </select>
+            </div>
+            {form.schoolName&&<button type="button" onClick={searchSchool}
+              style={{width:'100%',padding:'8px',background:'#f5f0e6',border:'1px solid #e0d8c0',borderRadius:8,color:'#7a6228',fontSize:13,cursor:'pointer',fontFamily:'inherit',marginBottom:4}}>
+              🔍 학교 검색
+            </button>}
+            {selectedSchool&&<div style={{padding:'8px 12px',background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:8,fontSize:13,color:'#166534'}}>
+              ✅ {selectedSchool.name} ({selectedSchool.region})
+              {schoolSubjects.length>0?` — 개설과목 ${schoolSubjects.length}개 확인됨`:''}
+            </div>}
+          </div>
           <div className="fp-full">
             <label className="fp-full-lbl">희망 대학 <span style={{fontWeight:400,color:'#bbb'}}>선택 — 입력 시 최신 권장과목 실시간 반영</span></label>
             <input className="fp-ctrl" placeholder="예: 서울대, 연세대, 성균관대…" value={form.university} onChange={set('university')}/>
@@ -1003,6 +1079,22 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
             <button onClick={onHistory} style={{background:'none',border:'1px solid #e0d8c0',borderRadius:8,padding:'6px 13px',color:'#7a6228',fontSize:12,cursor:'pointer',fontFamily:'inherit'}}>📋 이전 결과 보기</button>
           </div>
           <button className="fp-submit" onClick={submit} disabled={!valid}>추천받기 →</button>
+          {schoolModal&&(
+            <div className="school-modal" onClick={()=>setSchoolModal(false)}>
+              <div className="school-modal-box" onClick={e=>e.stopPropagation()}>
+                <div className="school-modal-title">학교 선택</div>
+                <div className="school-modal-sub">"{form.schoolName}" 검색 결과 — 학교를 선택해주세요</div>
+                {schoolSearching&&<div className="school-searching">검색 중...</div>}
+                {!schoolSearching&&schoolList.length===0&&<div className="school-searching">검색 결과가 없습니다</div>}
+                {schoolList.map((s,i)=>(
+                  <div key={i} className="school-item" onClick={()=>selectSchool(s)}>
+                    <div className="school-item-name">{s.name}<span className="school-badge">{s.region}</span></div>
+                    <div className="school-item-addr">{s.address}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {error&&<div className="fp-err">{error}</div>}
           <div className="fp-note">🔍 웹 검색으로 최신 대학 권장과목 반영 · 20~30초 소요</div>
         </div>
@@ -1075,8 +1167,9 @@ function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
         <div className="rp-card">
           <div className="rp-top2">
             <div className="chips">
-              <span className="chip">{form.career}</span>
+              {form.career&&<span className="chip">{form.career}</span>}
               <span className="chip">{form.major}</span>
+              {form.selectedSchool&&<span className="chip">🏫 {form.selectedSchool.name}</span>}
               {form.university&&<span className="chip">{form.university}</span>}
             </div>
             <div className="rp-btns">
