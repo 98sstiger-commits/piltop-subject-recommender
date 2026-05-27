@@ -1096,15 +1096,16 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
       }
       const results=parsed;
       // 히스토리 재실행이면 임시 키로 저장 (공유링크용, 히스토리 순서는 고정)
-      const shareId=autoForm
-        ? await saveResultTemp({results,form})
-        : await saveResult({results,form});
+      // formToSave 먼저 생성 (saveResult와 onResult 모두 동일하게 사용)
       const selSchool=selectedSchoolRef.current;
       const formToSave={
         career:form.career, major:form.major, university:form.university,
         grade:form.grade, schoolName:form.schoolName,
         selectedSchool:selSchool?{name:selSchool.name,atpt_code:selSchool.atpt_code,school_code:selSchool.school_code,region:selSchool.region}:null
       };
+      const shareId=autoForm
+        ? await saveResultTemp({results,form:formToSave})
+        : await saveResult({results,form:formToSave});
       onResult({results,form:formToSave,shareId});
     }catch(e){
       clearInterval(t);
