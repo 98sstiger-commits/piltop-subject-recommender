@@ -18,6 +18,18 @@ function isValidSubject(s) {
   return true;
 }
 
+async function fetchTimetable(atpt_code, school_code, year, grade, sem, pIndex) {
+  const params = new URLSearchParams({
+    KEY: NEIS_KEY, Type: 'json', pIndex, pSize: 1000,
+    ATPT_OFCDC_SC_CODE: atpt_code,
+    SD_SCHUL_CODE: school_code,
+    AY: year, SEM: sem, GRADE: grade
+  });
+  const r = await fetch(`${BASE}/hisTimetable?${params}`);
+  const d = await r.json();
+  return d?.hisTimetable?.[1]?.row || [];
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -53,27 +65,33 @@ export default async function handler(req, res) {
       const subjects = new Set();
       const grades = Array.isArray(grade) ? grade : [grade];
 
+      // 모든 조합을 병렬로 한번에 요청 (훨씬 빠름)
+      const tasks = [];
       for (const g of grades) {
         for (const sem of ['1', '2']) {
-          for (let pIndex = 1; pIndex <= 5; pIndex++) {
-            const params = new URLSearchParams({
-              KEY: NEIS_KEY, Type: 'json', pIndex, pSize: 1000,
-              ATPT_OFCDC_SC_CODE: atpt_code,
-              SD_SCHUL_CODE: school_code,
-              AY: year, SEM: sem, GRADE: g
-            });
-            const r = await fetch(`${BASE}/hisTimetable?${params}`);
-            const d = await r.json();
-            const rows = d?.hisTimetable?.[1]?.row || [];
-            if (rows.length === 0) break;
-            rows.forEach(row => {
-              const s = (row.ITRT_CNTNT || '').trim();
-              if (isValidSubject(s)) subjects.add(s);
-            });
-            if (rows.length < 1000) break;
-          }
+          tasks.push(fetchTimetable(atpt_code, school_code, year, g, sem, 1));
         }
       }
+
+      const results = await Promise.all(tasks);
+
+      // 1페이지 결과가 1000건이면 2페이지 추가 조회
+      const extraTasks = [];
+      for (let i = 0; i < tasks.length; i++) {
+        if (results[i].length >= 1000) {
+          const g = grades[Math.floor(i / 2)];
+          const sem = i % 2 === 0 ? '1' : '2';
+          extraTasks.push(fetchTimetable(atpt_code, school_code, year, g, sem, 2));
+        }
+      }
+      const extraResults = extraTasks.length > 0 ? await Promise.all(extraTasks) : [];
+
+      [...results, ...extraResults].forEach(rows => {
+        rows.forEach(row => {
+          const s = (row.ITRT_CNTNT || '').trim();
+          if (isValidSubject(s)) subjects.add(s);
+        });
+      });
 
       return res.status(200).json({ subjects: [...subjects].sort() });
     }
