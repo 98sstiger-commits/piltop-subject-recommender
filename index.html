@@ -698,7 +698,7 @@ const classifySubjects = (subjects) => {
     }
   }
   // 미분류 중 실제 과목만 (행사·활동 제외)
-  const excludeKeywords = ['활동','행사','총회','축제','캠프','체험','견학','봉사','조회','기념일','휴업일','재량'];
+  const excludeKeywords = ['활동','행사','총회','축제','캠프','체험','견학','봉사','조회','기념일','휴업일','재량','문화','진로','자율','토요','학부모','보강','대체'];
   const etc = subjects.filter(s=>!used.has(s)&&!excludeKeywords.some(k=>s.includes(k)));
   if(etc.length>0) result['기타']=etc;
   return result;
@@ -1168,10 +1168,13 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
 function CurriculumPanel({school,subjects,recommended}){
   const [open,setOpen]=React.useState(false);
   const cats=classifySubjects(subjects);
-  // 부분 매칭으로 하이라이트 (괄호/띄어쓰기 차이 허용)
-  const normalize=s=>s.replace(/[\s()Ⅰ-Ⅻ]/g,'').toLowerCase();
-  const recNorm=new Set(recommended.map(normalize));
-  const isMatched=s=>recNorm.has(normalize(s));
+  // 포함 관계 매칭 (과목명이 서로 포함되면 매칭)
+  const clean=s=>s.replace(/[\s()\[\]（）]/g,'').replace(/[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]/g,'').toLowerCase();
+  const recCleaned=recommended.map(clean);
+  const isMatched=s=>{
+    const sc=clean(s);
+    return recCleaned.some(r=>r.includes(sc)||sc.includes(r));
+  };
   return(
     <div className="curr-wrap">
       <button className="curr-toggle" onClick={()=>setOpen(o=>!o)}>
@@ -1273,7 +1276,7 @@ function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
               {form.university&&<span className="chip">{form.university}</span>}
             </div>
             <div className="rp-btns">
-              <button className="rb-lnk" onClick={copy} disabled={copying}>{copying?'생성 중...':'🔗 링크 복사'}</button>
+              {!isShared&&<button className="rb-lnk" onClick={copy} disabled={copying}>{copying?'생성 중...':'🔗 링크 복사'}</button>}
               <button className="rb-pdf" onClick={printPage}>📄 PDF 저장</button>
               {!isShared&&<button className="rb-bk" onClick={onBack}>↩ 다시 입력</button>}
             </div>
