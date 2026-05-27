@@ -1294,7 +1294,9 @@ function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
   const copy=async()=>{
     if(copying) return;
     setCopying(true);
-    const url=shareUrl||makeFormShareUrl(form)||location.href;
+    // 학생용 공유 URL: &s=1 추가 (PDF만 표시)
+    const base=shareUrl||makeFormShareUrl(form)||location.href;
+    const url=base+(base.includes('?')?'&s=1':'?s=1');
     try{
       await navigator.clipboard.writeText(url);
       setToast('✓ 링크가 복사되었습니다. 카카오톡에 붙여넣기 하세요!');
@@ -1363,8 +1365,8 @@ function App(){
     const params=new URLSearchParams(location.search);
     const rid=params.get('r');
     const did=params.get('d');
-    const isSharedParam=params.get('shared')==='1';
-    console.log('URL params:', {rid, did, isSharedParam, search:location.search});
+    const isSharedParam=params.get('s')==='1'||params.get('shared')==='1';
+    console.log('URL params:', {rid, isSharedParam, search:location.search});
     if(rid){
       setLoading(true);
       loadResult(rid).then(d=>{
