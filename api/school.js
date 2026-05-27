@@ -31,12 +31,12 @@ export default async function handler(req, res) {
       return res.status(200).json({ schools });
     }
 
-    // ── 개설과목 추출 ──────────────────────────────
+    // ── 개설과목 추출 (특정 학년) ──────────────────
     if (action === 'subjects') {
       const year = new Date().getFullYear();
       const subjects = new Set();
 
-      // 1학기 + 2학기 모두 조회, pSize=1000으로 2페이지
+      // 1학기 + 2학기 조회, pSize=1000으로 최대 2페이지
       for (const sem of ['1', '2']) {
         for (const pIndex of [1, 2]) {
           const params = new URLSearchParams({
