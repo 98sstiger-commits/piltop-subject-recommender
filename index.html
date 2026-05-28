@@ -1305,7 +1305,7 @@ function CurriculumPanel({school,subjects,recommended}){
               <span style={{fontSize:11,color:'#666'}}>연두색 = 추천 과목 중 이 학교에 개설된 과목</span>
             </span>
             <span style={{display:'flex',alignItems:'center',gap:6}}>
-              <span style={{display:'inline-block',width:10,height:10,background:'#fef9c3',border:'1px solid #fde047',borderRadius:3,flexShrink:0}}/>
+              <span style={{display:'inline-block',width:10,height:10,background:'#7c3aed',borderRadius:3,flexShrink:0}}/>
               <span style={{fontSize:11,color:'#666'}}>보라색 = 이 학교 미개설 → 공동교육과정·온라인공동교육과정으로 이수 권장</span>
             </span>
           </div>
@@ -1381,12 +1381,16 @@ function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
     return (results.subjects||[]).map(s=>{
       const nc=clean(s.name);
       const isCommon=[...COMMON_SUBJECTS].some(c=>clean(c)===nc||nc.includes(clean(c))||clean(c).includes(nc));
-      if(isCommon) return {...s,badgeType:'common'};
+      // NEIS 확인 우선 (학교 선택한 경우)
       if(schoolSubjects.length>0){
         const neis=isSchoolSubject(s.name,schoolSubjects);
-        return {...s,badgeType:neis?'ok':'coop'};
+        if(neis) return {...s,badgeType:'ok'};      // NEIS 확인 → 🏫
+        if(isCommon) return {...s,badgeType:'common'}; // 전국공통 → 📋
+        return {...s,badgeType:'coop'};              // 나머지 → 🔍
       }
-      return {...s,badgeType:'common'};
+      // 학교 미선택
+      if(isCommon) return {...s,badgeType:'common'};
+      return {...s,badgeType:'coop'};
     });
   },[results.subjects,schoolSubjects]);
   const total=(results.subjects||[]).length;
