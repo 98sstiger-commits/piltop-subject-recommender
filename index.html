@@ -290,7 +290,7 @@
     .sc-추천 .scard{border-left:3px solid var(--gold)}
     .sc-선택 .scard{border-left:3px solid #d0c8b4}
     .sc-top{display:flex;align-items:center;gap:5px;margin-bottom:7px;flex-wrap:wrap}
-    .sname{font-size:17px;font-weight:800;color:var(--text);letter-spacing:-.3px}
+    .sname{font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.3px}
     .cat{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
     .cat-g{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe}
     .cat-c{background:#fdf8ee;color:#8a6e1a;border:1px solid #e8d898}
@@ -321,12 +321,12 @@
 .curr-body{background:#fafaf8;border:1px solid #ede8de;border-radius:0 0 10px 10px;border-top:none;padding:14px 16px}
 .curr-cats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .curr-cat{background:#fff;border:1px solid #ede8de;border-radius:8px;padding:10px 12px}
-.curr-cat-name{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.08em;margin-bottom:6px}
+.curr-cat-name{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.08em;margin-bottom:6px}
 .curr-tags{display:flex;flex-wrap:wrap;gap:4px}
-.curr-tag{padding:2px 8px;background:#f5f0e6;border-radius:20px;font-size:11px;color:#7a6228}
+.curr-tag{padding:2px 8px;background:#f5f0e6;border-radius:20px;font-size:12px;color:#7a6228}
 .curr-tag.matched{background:#16a34a;color:#fff;border:none;font-weight:700}
-@media(max-width:640px){.curr-cats{grid-template-columns:repeat(2,1fr)}}
-.sbadge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;margin-left:6px;white-space:nowrap;letter-spacing:0}
+@media(max-width:640px){.curr-cats{grid-template-columns:1fr}}
+.sbadge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:4px;font-size:11px;font-weight:600;margin-left:6px;white-space:nowrap;letter-spacing:0}
 .sbadge-ok{background:#dcfce7;color:#15803d;border:1.5px solid #16a34a}
 .sbadge-common{background:#dbeafe;color:#1d4ed8;border:1.5px solid #2563eb}
 .sbadge-coop{background:#ede9fe;color:#6d28d9;border:1.5px solid #7c3aed}
@@ -722,19 +722,31 @@ const isSchoolSubject = (name, schoolSubjects) => {
 };
 
 const classifySubjects = (subjects) => {
-  const cats = {
-    '국어': ['국어','화법','독서','문학','작문','언어','매체','주제탐구'],
-    '수학': ['수학','대수','미적분','확률','통계','기하','경제수학','인공지능수학'],
-    '영어': ['영어','영미','심화영어','직무영어','미디어영어','세계문화'],
-    '사회': ['사회','역사','지리','정치','경제','법','윤리','세계사','한국사','인문학','국제'],
-    '과학': ['과학','물리','화학','생명','생물','지구','역학','전자기','물질','세포','유전','지구시스템','행성'],
-    '정보': ['정보','인공지능','데이터','소프트웨어'],
-    '기술·가정': ['기술','가정','로봇','공학','창의','아동','생애','발명'],
-    '예술': ['음악','미술','연극'],
-    '체육': ['체육','스포츠','운동'],
-    '교양': ['철학','심리','윤리','보건','환경','경제활동','논술','종교','논리'],
-    '제2외국어': ['일본어','중국어','프랑스어','독일어','스페인어','러시아어','아랍어','베트남어','한문'],
-  };
+  // 제2외국어 먼저 분리 (국어에 '국어' 포함된 과목 오분류 방지)
+  const LANG2 = ['일본어','중국어','프랑스어','독일어','스페인어','러시아어','아랍어','베트남어','한문'];
+  const CATS = [
+    ['제2외국어', s => LANG2.some(k => s.replace(/\s/g,'').startsWith(k.replace(/\s/g,'')))],
+    ['국어',      s => /^(문학|독서|화법|언어와매체|주제탐구독서|현대문학|인문학과윤리|고전|독서토론|매체|언어생활)/.test(s.replace(/\s/g,''))],
+    ['수학',      s => /^(대수|미적분|확률과통계|기하|수학과제|경제수학|인공지능수학|실용통계|수학과문화|직무수학)/.test(s.replace(/\s/g,''))],
+    ['영어',      s => /^(영어|심화영어|영미문학|직무의사소통|언어생활탐구|세계문화와영어|영어발표|영어독해)/.test(s.replace(/\s/g,''))],
+    ['사회',      s => /사회|역사|지리|정치|경제|법과|윤리|세계사|한국사|인문학|국제관계|금융|도시|여행지리|사회문제/.test(s.replace(/\s/g,''))],
+    ['과학',      s => /물리|화학|생명|생물|지구|역학|전자기|물질과에너지|세포|유전|지구시스템|행성|과학과제|가정과학|생활과학|융합과학|생태/.test(s.replace(/\s/g,''))],
+    ['정보',      s => /^(정보|인공지능|데이터|소프트웨어)/.test(s.replace(/\s/g,''))],
+    ['기술·가정', s => /로봇|공학|창의공학|아동발달|생애|발명|기술가정/.test(s.replace(/\s/g,''))],
+    ['예술',      s => /음악|미술|연극/.test(s.replace(/\s/g,''))],
+    ['체육',      s => /체육|스포츠|운동과건강/.test(s.replace(/\s/g,''))],
+    ['교양',      s => /철학|심리|보건|논술|종교|시창|창음|프로그래밍/.test(s.replace(/\s/g,''))],
+  ];
+  const result = {};
+  const used = new Set();
+  for(const [cat, fn] of CATS){
+    const matched = subjects.filter(s=>!used.has(s)&&fn(s));
+    if(matched.length>0){result[cat]=matched; matched.forEach(s=>used.add(s));}
+  }
+  const etc=subjects.filter(s=>!used.has(s));
+  if(etc.length>0) result['기타']=etc;
+  return result;
+};
   const result = {};
   const used = new Set();
   for(const [cat, keywords] of Object.entries(cats)){
