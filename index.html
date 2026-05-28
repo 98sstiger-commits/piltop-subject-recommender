@@ -747,24 +747,6 @@ const classifySubjects = (subjects) => {
   if(etc.length>0) result['기타']=etc;
   return result;
 };
-  const result = {};
-  const used = new Set();
-  for(const [cat, keywords] of Object.entries(cats)){
-    const matched = subjects.filter(s=>
-      !used.has(s) && keywords.some(k=>s.replace(/\s/g,'').includes(k.replace(/\s/g,'')))
-    );
-    if(matched.length>0){
-      result[cat]=matched;
-      matched.forEach(s=>used.add(s));
-    }
-  }
-  // 미분류 중 실제 과목만 (행사·활동 제외)
-  const excludeKeywords = ['활동','행사','총회','축제','캠프','체험','견학','봉사','조회','기념일','휴업일','재량','문화','진로','자율','토요','학부모','보강','대체'];
-  const etc = subjects.filter(s=>!used.has(s)&&!excludeKeywords.some(k=>s.includes(k)));
-  if(etc.length>0) result['기타']=etc;
-  return result;
-};
-
 const LSTEPS=['진로·전공 분석','대학·학과 실시간 검색','2022 개정 과목 매칭','세특 탐구 주제 생성'];
 const PMETA={필수:{desc:'대학 권장 · 전공 직결'},추천:{desc:'진로 강력 연계'},선택:{desc:'보완 · 심화'}};
 function catCls(c){return c==='일반선택'?'cat cat-g':c==='진로선택'?'cat cat-c':'cat cat-f'}
