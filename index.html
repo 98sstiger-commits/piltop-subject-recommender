@@ -326,9 +326,10 @@
 .curr-tag{padding:2px 8px;background:#f5f0e6;border-radius:20px;font-size:11px;color:#7a6228}
 .curr-tag.matched{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
 @media(max-width:640px){.curr-cats{grid-template-columns:repeat(2,1fr)}}
-.sbadge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;margin-left:6px}
+.sbadge{display:inline-flex;align-items:center;gap:3px;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;margin-left:6px;white-space:nowrap}
 .sbadge-ok{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
-.sbadge-warn{background:#fef9c3;color:#854d0e;border:1px solid #fde047}
+.sbadge-check{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}
+.sbadge-coop{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid rgba(200,162,48,.3);color:var(--gold);padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:300;white-space:nowrap;animation:toastIn .3s ease;max-width:90vw;text-align:center}
     @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
@@ -697,6 +698,19 @@ schoolAvailable 필드 규칙 (반드시 포함):
 
 // 과목 교과별 자동 분류
 // 학교 개설과목 여부 확인 (포함관계 매칭)
+const COMMON_SUBJECTS=new Set(['문학','독서와작문','화법과언어','언어와매체','주제탐구독서','대수','미적분Ⅱ','확률과통계','기하','영어Ⅰ','영어Ⅱ','영어독해와작문','영미문학읽기','심화영어','세계사','사회와문화','현대사회와윤리','세계시민과지리','경제','정치','윤리와사상','인문학과윤리','한국지리탐구','동아시아역사기행','여행지리','사회문제탐구','법과사회','물리학','화학','생명과학','지구과학','역학과에너지','세포와물질대사','지구시스템과학','화학반응의세계','생물의유전','행성우주과학','물질과에너지','융합과학탐구','생태와환경','과학과제연구','인공지능기초','정보','창의공학설계','음악연주와창작','음악감상과비평','미술창작','미술감상과비평','스포츠생활','운동과건강','스포츠생활1','일본어','중국어']);
+const CHECK_SUBJECTS=new Set(['전자기와양자','인공지능수학','경제수학','수학과제탐구','도시의미래탐구','금융과경제생활','국제관계의이해','기후변화와환경생태','로봇과공학세계','소프트웨어와생활','문학과영상','독서토론과글쓰기','아동발달과부모','생활과학탐구','실용통계','수학과문화']);
+const getSubjectBadge=(subjectName,schoolAvailable,hasSchoolData)=>{
+  if(!hasSchoolData) return null;
+  const clean=s=>s.replace(/[\s·\-]/g,'');
+  const nc=clean(subjectName);
+  for(const c of COMMON_SUBJECTS){if(clean(c)===nc||nc.includes(clean(c))||clean(c).includes(nc)) return 'common';}
+  if(schoolAvailable===true) return 'confirmed';
+  for(const c of CHECK_SUBJECTS){if(clean(c)===nc||nc.includes(clean(c))||clean(c).includes(nc)) return 'check';}
+  if(schoolAvailable===false) return 'coop';
+  return null;
+};
+
 const isSchoolSubject = (name, schoolSubjects) => {
   if(!schoolSubjects||schoolSubjects.length===0) return false;
   const clean = s => s.replace(/[\s()（）\[\]]/g,'').replace(/[ⅠⅡⅢⅣⅤⅥ]/g,'').toLowerCase();
@@ -1288,7 +1302,7 @@ function CurriculumPanel({school,subjects,recommended}){
             if(missing.length===0) return null;
             return(
               <div style={{background:'#fffbeb',border:'1px solid #fde68a',borderRadius:8,padding:'10px 14px'}}>
-                <div style={{fontSize:12,fontWeight:700,color:'#92400e',marginBottom:6}}>⚠️ 추천 과목 중 이 학교 미개설 — 공동교육과정 필요</div>
+                <div style={{fontSize:12,fontWeight:700,color:'#92400e',marginBottom:4}}>⚠️ 추천 과목 중 이 학교 미개설 가능성 — 반드시 학교 확인 후 공동교육과정·온라인공동교육과정 이수 권장</div>
                 <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
                   {missing.map((s,i)=>(
                     <span key={i} style={{padding:'2px 10px',background:'#fef3c7',border:'1px solid #fde68a',borderRadius:20,fontSize:12,color:'#92400e',fontWeight:600}}>{s}</span>
@@ -1303,7 +1317,7 @@ function CurriculumPanel({school,subjects,recommended}){
   );
 }
 
-function PSection({priority,subjects}){
+function PSection({priority,subjects,form,schoolSubjects}){
   const list=subjects.filter(s=>s.priority===priority);
   if(!list.length) return null;
   return(
@@ -1315,8 +1329,13 @@ function PSection({priority,subjects}){
             <div className="sc-top">
               <span className="sname">{s.name}</span>
               <span className={catCls(s.category)}>{s.category}</span>
-              {s.schoolAvailable===true&&<span className="sbadge sbadge-ok">✅ 이 학교 개설</span>}
-              {s.schoolAvailable===false&&<span className="sbadge sbadge-warn">⚠️ 공동교육과정</span>}
+              {(()=>{
+                const badge=getSubjectBadge(s.name,s.schoolAvailable,!!(form.selectedSchool&&schoolSubjects.length>0));
+                if(badge==='confirmed') return <span className="sbadge sbadge-ok">✅ 이 학교 개설</span>;
+                if(badge==='check') return <span className="sbadge sbadge-check">🔍 학교 확인 권장</span>;
+                if(badge==='coop') return <span className="sbadge sbadge-coop">⚠️ 공동교육과정</span>;
+                return null;
+              })()}
             </div>
             <p className="sreason">{s.reason}</p>
             <div className="ext-l">세특 탐구 주제</div>
@@ -1416,7 +1435,7 @@ function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
             <CurriculumPanel school={form.selectedSchool} subjects={schoolSubjects} recommended={(results.subjects||[]).map(s=>s.name)}/>
           )}
           <div className="strat"><div className="strat-l">과목 선택 전략</div><p className="strat-t">{results.overall_strategy}</p></div>
-          {['필수','추천','선택'].map(p=><PSection key={p} priority={p} subjects={computedSubjects}/>)}
+          {['필수','추천','선택'].map(p=><PSection key={p} priority={p} subjects={computedSubjects} form={form} schoolSubjects={schoolSubjects}/>)}
           <div className="rp-footer">2022 개정 교육과정 기준 · 웹 검색 기반 대학 권장과목 반영 · 반드시 각 대학 입학처에서 최신 정보를 확인하세요 · 필탑학원</div>
         </div>
       </div>
