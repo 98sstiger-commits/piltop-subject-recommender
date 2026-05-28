@@ -333,6 +333,27 @@
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid rgba(200,162,48,.3);color:var(--gold);padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:300;white-space:nowrap;animation:toastIn .3s ease;max-width:90vw;text-align:center}
     @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
+
+    /* ── RIGHT INDEX ── */
+    .rp-index{
+      position:fixed;right:20px;top:50%;transform:translateY(-50%);
+      display:flex;flex-direction:column;gap:8px;z-index:50;
+    }
+    .rp-idx-btn{
+      display:flex;align-items:center;gap:7px;cursor:pointer;
+      background:rgba(255,255,255,0.93);border:1px solid #e0d8c0;
+      border-radius:20px;padding:7px 13px;
+      font-size:12px;font-weight:700;color:#7a6228;font-family:var(--fb);
+      box-shadow:0 2px 10px rgba(0,0,0,0.1);
+      transition:all .18s;white-space:nowrap;
+    }
+    .rp-idx-btn:hover{background:#f5f0e6;border-color:var(--gold);transform:translateX(-3px)}
+    .rp-idx-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .rp-idx-dot.필수{background:#c0392b}
+    .rp-idx-dot.추천{background:var(--gold)}
+    .rp-idx-dot.선택{background:#b0aaa4}
+    @media(max-width:1180px){.rp-index{display:none}}
+
     /* ── RESPONSIVE ── */
     @media(max-width:900px){
       .intro{grid-template-columns:1fr;padding:56px 32px 48px}
@@ -622,7 +643,7 @@ schoolAvailable 필드 규칙 (반드시 포함):
 의학·치의학·한의학: 화학(일반), 생명과학(일반), 미적분Ⅱ(진로)
 약학·간호·보건: 화학(일반), 생명과학(일반), 확률과통계또는미적분Ⅱ(진로)
 수의학: 화학(일반), 생명과학(일반), 세포와물질대사(진로)
-생명과학·생물학·생명공학: 생명과학(일반), 화학(일반), 세포와물질대사(진로), 생물의유전(진로-추천이상)
+생명과학·생물학·생명공학: 생명과학(일반), 화학(일반), 물리학(일반), 세포와물질대사(진로), 생물의유전(진로-추천이상)
 화학·화학공학: 화학(일반), 물질과에너지(진로), 화학반응의세계(진로)
 물리학·물리치료: 물리학(일반), 역학과에너지(진로), 미적분Ⅱ(진로)
 기계·항공우주·로봇공학: 물리학(일반), 미적분Ⅱ(진로), 역학과에너지(진로), 지구과학(일반)
@@ -697,6 +718,16 @@ schoolAvailable 필드 규칙 (반드시 포함):
 2. 개설과목에 없지만 전공에 필수인 과목 → reason에 "이 학교에 개설되지 않은 과목입니다. 공동교육과정이나 온라인 공동교육과정을 통해 이수를 권장합니다." 포함
 3. 개설과목에 없고 굳이 필수가 아닌 과목 → 추천 목록에서 제외
 
+[과목 위계 규칙 — 절대 준수]
+진로선택 과목을 포함할 경우, 해당 교과 일반선택 과목을 반드시 함께 포함할 것 (일반선택 priority ≥ 진로선택 priority):
+- 역학과에너지 또는 전자기와양자 포함 시 → 물리학(일반선택) 반드시 포함
+- 화학반응의세계 또는 물질과에너지 포함 시 → 화학(일반선택) 반드시 포함
+- 세포와물질대사 또는 생물의유전 포함 시 → 생명과학(일반선택) 반드시 포함
+- 지구시스템과학 또는 행성우주과학 포함 시 → 지구과학(일반선택) 반드시 포함
+- 미적분Ⅱ 또는 기하 포함 시 → 대수(일반선택) 반드시 포함
+- 경제수학 또는 수학과제탐구 포함 시 → 확률과통계(일반선택) 반드시 포함
+예외 없음. 위반 시 신뢰도 심각 저하.
+
 [일관성 규칙 — 반드시 준수]
 위 [전공별 필수과목] 목록에 명시된 과목은 priority를 반드시 "필수"로 설정. 절대 "추천"이나 "선택"으로 내리지 말 것. 매번 동일한 전공 입력 시 필수과목은 항상 동일하게 출력.`;
 
@@ -751,6 +782,27 @@ const classifySubjects = (subjects) => {
   if(etc.length>0) result['기타']=etc;
   return result;
 };
+
+// ── 위계 규칙 클라이언트 검증 ──
+const HIERARCHY_RULES = [
+  { triggers: ['역학과에너지', '전자기와양자'], requires: '물리학' },
+  { triggers: ['화학반응의세계', '물질과에너지'], requires: '화학' },
+  { triggers: ['세포와물질대사', '생물의유전'], requires: '생명과학' },
+  { triggers: ['지구시스템과학', '행성우주과학'], requires: '지구과학' },
+  { triggers: ['미적분Ⅱ', '기하'], requires: '대수' },
+  { triggers: ['경제수학', '수학과제탐구'], requires: '확률과통계' },
+];
+const checkHierarchy = (subjects) => {
+  const names = (subjects || []).map(s => s.name || '');
+  const missing = [];
+  for (const rule of HIERARCHY_RULES) {
+    const hasTrigger = rule.triggers.some(t => names.some(n => n.includes(t)));
+    const hasRequired = names.some(n => n.includes(rule.requires));
+    if (hasTrigger && !hasRequired) missing.push(rule.requires);
+  }
+  return missing;
+};
+
 const LSTEPS=['진로·전공 분석','대학·학과 실시간 검색','2022 개정 과목 매칭','세특 탐구 주제 생성'];
 const PMETA={필수:{desc:'대학 권장 · 전공 직결'},추천:{desc:'진로 강력 연계'},선택:{desc:'보완 · 심화'}};
 function catCls(c){return c==='일반선택'?'cat cat-g':c==='진로선택'?'cat cat-c':'cat cat-f'}
@@ -1067,7 +1119,7 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
     if(autoForm&&autoForm.career&&autoForm.major) submit();
   },[]);
 
-  const submit=async()=>{
+  const submit=async(retried=false)=>{
     setLoading(true);setError(null);setLstep(0);
     const t=setInterval(()=>setLstep(s=>s<LSTEPS.length-1?s+1:s),3500);
     const gradeLabel = form.grade==='1' ? '고1(고2~3 과목 추천 필요)' : '고2(고3 과목 추천 필요)';
@@ -1127,6 +1179,16 @@ function FormPage({onBack,onResult,autoForm,onHistory}){
         clearInterval(t);
         setLoading(false);
         setTimeout(()=>submit(), 1000);
+        return;
+      }
+      // 위계 규칙 클라이언트 검증 — 위반 시 자동 재생성 (1회)
+      const hierMissing = checkHierarchy(parsed.subjects);
+      if(hierMissing.length > 0 && !retried) {
+        console.warn('위계 위반 감지, 자동 재생성:', hierMissing);
+        clearInterval(t);
+        setLoading(false);
+        setError(`⚠️ 과목 누락 감지 (${hierMissing.join(', ')} 필요). 자동 재생성 중...`);
+        setTimeout(() => { setError(null); submit(true); }, 1500);
         return;
       }
       // 대학·학과 존재 여부 오류 처리
@@ -1408,7 +1470,26 @@ function ResultsPage({results,form,shareId,onBack,onHome,isShared}){
 
   return(
     <div className="rp">
-      <div className="rp-top">
+      {/* 오른쪽 고정 인덱스 */}
+    <div className="rp-index">
+      {['필수','추천','선택'].map(p=>{
+        const cnt=(results.subjects||[]).filter(s=>s.priority===p).length;
+        if(!cnt) return null;
+        return(
+          <div key={p} className="rp-idx-btn" onClick={()=>{
+            const el=[...document.querySelectorAll('.psec')].find(el=>el.querySelector('.pb-'+p));
+            if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+          }}>
+            <span className={'rp-idx-dot '+p}/>
+            <span>{p} {cnt}</span>
+          </div>
+        );
+      })}
+      <div className="rp-idx-btn" style={{background:'var(--gold)',color:'#fff',border:'none',justifyContent:'center'}} onClick={printPage}>
+        📄 PDF
+      </div>
+    </div>
+    <div className="rp-top">
         {!isShared&&<button className="rp-home" onClick={()=>{history.pushState('','',location.pathname);onHome();}}>← 처음으로</button>}
         <div className="rp-ey">SUBJECT RECOMMENDER</div>
         <div className="rp-hd">큐리큘라</div>
