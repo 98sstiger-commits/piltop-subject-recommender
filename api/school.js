@@ -1,6 +1,41 @@
 const NEIS_KEY = '0e64c7c2b82142bfa57843bdb1b2d98f';
 const BASE = 'https://open.neis.go.kr/hub';
 
+// ── A안: NEIS 과목명 → 2022 개정 표준 과목명 정규화 매핑 ──
+const NAME_MAP = {
+  // 수학
+  '수학Ⅰ': '대수', '수학1': '대수',
+  '수학Ⅱ': '미적분Ⅱ', '수학2': '미적분Ⅱ',
+  '미적분': '미적분Ⅱ',
+  // 과학
+  '물리학Ⅰ': '물리학', '물리학1': '물리학',
+  '물리Ⅰ': '물리학',
+  '화학Ⅰ': '화학', '화학1': '화학',
+  '생명과학Ⅰ': '생명과학', '생명과학1': '생명과학',
+  '지구과학Ⅰ': '지구과학', '지구과학1': '지구과학',
+  '물리학Ⅱ': '역학과에너지', // 2015 Ⅱ → 2022 융합선택
+  '화학Ⅱ': '화학반응의세계',
+  '생명과학Ⅱ': '세포와물질대사',
+  '지구과학Ⅱ': '지구시스템과학',
+  // 영어
+  '영어Ⅰ': '영어Ⅰ', // 유지
+  '영어Ⅱ': '영어Ⅱ',
+  // 제2외국어
+  '일본어Ⅰ': '일본어',
+  '중국어Ⅰ': '중국어',
+  '프랑스어Ⅰ': '프랑스어',
+  '독일어Ⅰ': '독일어',
+  '스페인어Ⅰ': '스페인어',
+  // 음악/미술 표기 통일
+  '음악 연주': '음악 연주와 창작',
+  '음악연주': '음악 연주와 창작',
+};
+
+function normalizeName(s) {
+  return NAME_MAP[s] || NAME_MAP[s.trim()] || s;
+}
+
+// 비과목 필터
 const NON_SUBJECT_PATTERNS = [
   '지필평가','수행평가','고사','시험','평가일','연합학력평가','전국연합',
   '모의고사','학력평가','진단평가','성취도평가',
@@ -65,17 +100,16 @@ export default async function handler(req, res) {
       const subjects = new Set();
       const grades = Array.isArray(grade) ? grade : [grade];
 
-      // 모든 조합을 병렬로 한번에 요청 (훨씬 빠름)
+      // 병렬 조회
       const tasks = [];
       for (const g of grades) {
         for (const sem of ['1', '2']) {
           tasks.push(fetchTimetable(atpt_code, school_code, year, g, sem, 1));
         }
       }
-
       const results = await Promise.all(tasks);
 
-      // 1페이지 결과가 1000건이면 2페이지 추가 조회
+      // 2페이지 필요한 경우 추가 조회
       const extraTasks = [];
       for (let i = 0; i < tasks.length; i++) {
         if (results[i].length >= 1000) {
@@ -88,8 +122,11 @@ export default async function handler(req, res) {
 
       [...results, ...extraResults].forEach(rows => {
         rows.forEach(row => {
-          const s = (row.ITRT_CNTNT || '').trim();
-          if (isValidSubject(s)) subjects.add(s);
+          const raw = (row.ITRT_CNTNT || '').trim();
+          if (!isValidSubject(raw)) return;
+          // A안: 과목명 정규화 적용
+          const normalized = normalizeName(raw);
+          subjects.add(normalized);
         });
       });
 
